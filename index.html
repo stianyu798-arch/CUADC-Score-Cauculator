@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta id="metaThemeColor" name="theme-color" content="#f0f0f3" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <title>无人机短距起降 · 单轮成绩计算器（CUADC 2026）</title>
+  <title>无人机短距起降 · 成绩计算器（CUADC 2026）</title>
   <meta
     name="description"
     content="依据《2026中国大学生飞行器设计创新大赛竞赛规则》无人机短距起降项目第6.1条，估算单轮成绩 S_turn。赛项俗称「微固」即本项目。"
@@ -46,6 +46,23 @@
       --chart-value-text: #1c2024;
       --chart-axis-text: #60646c;
       --chart-surface: #ffffff;
+      /* 排版层级（全页统一） */
+      --fs-display: clamp(2rem, 5vw, 3rem);
+      --fs-h2: 1.25rem;
+      --fs-h2-sm: 1.125rem;
+      --fs-h3: 1rem;
+      --fs-body: 1rem;
+      --fs-sub: 0.8125rem;
+      --fs-label: 0.875rem;
+      --fs-caption: 0.75rem;
+      --fs-micro: 0.625rem;
+      --lh-body: 1.5;
+      --lh-relaxed: 1.6;
+      --lh-snug: 1.4;
+      --fs-hero: 2rem;
+      --fs-hero-sm: 1.65rem;
+      --fs-score-embed: 1.55rem;
+      --fs-modal-close: 1.375rem;
     }
 
     [data-theme="dark"] {
@@ -84,162 +101,137 @@
       margin: 0;
       min-height: 100vh;
       font-family: Inter, "Noto Sans SC", -apple-system, system-ui, sans-serif;
-      font-size: 16px;
-      line-height: 1.4;
+      font-size: var(--fs-body);
+      line-height: var(--lh-body);
       color: var(--near-black);
       background: var(--cloud-gray);
       -webkit-font-smoothing: antialiased;
     }
 
     .wrap {
-      max-width: 1200px;
+      box-sizing: border-box;
+      width: 100%;
+      max-width: min(1320px, 100%);
       margin: 0 auto;
       padding-top: 40px;
       padding-bottom: max(96px, env(safe-area-inset-bottom));
       padding-left: max(24px, env(safe-area-inset-left));
       padding-right: max(24px, env(safe-area-inset-right));
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+
+    .wrap > header {
+      flex-shrink: 0;
+    }
+
+    .wrap > footer {
+      flex-shrink: 0;
+    }
+
+    @media (min-width: 900px) {
+      .wrap {
+        padding-bottom: max(40px, env(safe-area-inset-bottom));
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+      }
     }
 
     header {
-      margin-bottom: 48px;
-      padding-bottom: 40px;
+      margin-bottom: 32px;
+      padding-bottom: 28px;
       border-bottom: 1px solid var(--border-lavender);
-      text-align: center;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      column-gap: 12px;
+      row-gap: 12px;
     }
 
-    /* 与公式同宽收缩：以较宽者为准，文字自动换行对齐块宽 */
-    header .header-doc {
-      display: inline-block;
-      width: -moz-fit-content;
-      width: fit-content;
-      max-width: 100%;
-      min-width: 0;
-      margin: 0 auto;
-      vertical-align: top;
-      text-align: left;
-      box-sizing: border-box;
+    .header-actions {
+      grid-column: 3;
+      justify-self: end;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px 28px;
+      margin-top: 0;
+    }
+
+    .header-tool {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-tool-label {
+      font-size: var(--fs-sub);
+      font-weight: 500;
+      color: var(--slate);
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .header-info-btn {
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      margin: 0;
+      border-radius: 50%;
+      border: 1px solid var(--border-lavender);
+      background: var(--pure-white);
+      color: var(--link-cobalt);
+      font-size: var(--fs-body);
+      font-weight: 700;
+      font-style: italic;
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: var(--whisper);
+      transition:
+        transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1),
+        border-color 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.22s ease;
+    }
+
+    .header-info-btn:hover {
+      border-color: var(--link-cobalt);
+      background: rgba(13, 116, 206, 0.07);
+      transform: scale(1.06);
+      box-shadow: var(--elevated);
+    }
+
+    .header-info-btn:active {
+      transform: scale(0.94);
+      transition-duration: 0.1s;
+    }
+
+    .header-info-btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(13, 116, 206, 0.28);
+    }
+
+    [data-theme="dark"] .header-info-btn {
+      background: var(--pure-white);
     }
 
     header h1 {
+      grid-column: 2;
+      justify-self: center;
       font-family: Inter, "Noto Sans SC", sans-serif;
       font-weight: 700;
-      font-size: clamp(2rem, 5vw, 3rem);
-      line-height: 1.1;
-      letter-spacing: -0.06em;
-      margin: 0 0 16px;
+      font-size: var(--fs-display);
+      line-height: 1.15;
+      letter-spacing: 0.06em;
+      margin: 0;
+      padding: 0 8px;
       color: var(--expo-black);
       text-align: center;
-    }
-
-    header p {
-      margin: 0;
-      color: var(--slate);
-      font-size: 18px;
-      font-weight: 400;
-      line-height: 1.4;
-      max-width: 42em;
-    }
-
-    header .header-doc p {
-      max-width: none;
-    }
-
-    header .header-intro {
-      margin: 0 0 24px;
-    }
-
-    header .header-intro p {
-      margin: 0 0 14px;
-      color: var(--slate);
-      font-size: clamp(15px, 0.35vw + 14px, 17px);
-      font-weight: 400;
-      line-height: 1.6;
-      overflow-wrap: anywhere;
-      word-wrap: break-word;
-    }
-
-    header .header-intro p:last-child {
-      margin-bottom: 0;
-    }
-
-    header .header-note {
-      margin: 22px 0 0;
-      padding-top: 22px;
-      border-top: 1px solid var(--border-lavender);
-      letter-spacing: -0.035em;
-    }
-
-    header .header-note p {
-      margin: 0 0 12px;
-      color: var(--mid-slate);
-      font-size: clamp(13px, 0.25vw + 12.5px, 14px);
-      line-height: 1.65;
-      overflow-wrap: anywhere;
-      word-wrap: break-word;
-    }
-
-    header .header-note p:last-child {
-      margin-bottom: 0;
-    }
-
-    header .header-note .header-note-lead {
-      margin-bottom: 14px;
-      color: var(--slate);
-      font-size: 14px;
-    }
-
-    header .header-note strong {
-      color: var(--near-black);
-      font-weight: 600;
-    }
-
-    header .header-formula {
-      margin: 0 0 20px;
-      color: var(--slate);
-      font-size: clamp(12px, 1.4vw + 10px, 16px);
-      box-sizing: border-box;
-    }
-
-    header .header-formula .katex {
-      color: inherit;
-    }
-
-    /* 窄屏：竖排公式，与正文同宽 */
-    header .header-formula--stack {
-      display: block;
-      max-width: 100%;
-    }
-
-    header .header-formula--stack .katex-display {
-      margin: 0 auto;
-      width: fit-content;
-      max-width: 100%;
-    }
-
-    /* 宽屏：横排；极窄桌面仍可能略宽，允许横向滚动 */
-    header .header-formula--row {
-      display: none;
-      max-width: 100%;
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 4px;
-    }
-
-    header .header-formula--row .katex-display {
-      margin: 0;
-      width: max-content;
-      max-width: none;
-    }
-
-    @media (min-width: 992px) {
-      header .header-formula--stack {
-        display: none !important;
-      }
-
-      header .header-formula--row {
-        display: block !important;
-      }
     }
 
     .grid {
@@ -253,25 +245,40 @@
         align-items: start;
       }
 
-      /* 左：参数；右：可视化顶对齐、得分底对齐，列高等高 */
+      /* 两列：左 1/3 参数+保存 | 右 2/3 公式+成绩+影响曲线；单行撑满 workspace-stack 高度 */
       .workspace-main {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+        grid-template-rows: 1fr;
         align-items: stretch;
+        flex: 1 1 auto;
+        min-height: 0;
       }
 
       .workspace-left {
         height: 100%;
         align-self: stretch;
-      }
-
-      .workspace-left > .card {
-        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
         min-height: 0;
       }
 
       .workspace-right {
         height: 100%;
         align-self: stretch;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        gap: 0;
+      }
+
+      /* 两列主卡片同高，底边对齐 */
+      .workspace-left > .param-input-card,
+      .workspace-right > .sensitivity-panel {
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
       }
 
       .workspace-right .workspace-viz {
@@ -286,7 +293,6 @@
         flex-shrink: 0;
       }
 
-      /* 勿用 min-height:0 压扁网格，否则起飞标尺会画出卡片叠到「计算结果」上 */
       .workspace-right .workspace-viz .viz-grid {
         flex: 1 1 auto;
         min-height: min-content;
@@ -314,9 +320,15 @@
     .workspace-left {
       display: flex;
       flex-direction: column;
-      gap: 0;
+      gap: 24px;
       min-width: 0;
       min-height: 0;
+    }
+
+    @media (min-width: 900px) {
+      .workspace-left {
+        gap: 0;
+      }
     }
 
     .workspace-right {
@@ -325,6 +337,450 @@
       gap: 24px;
       min-width: 0;
       min-height: 0;
+    }
+
+    .impact-formula-head {
+      margin: 0;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-lavender);
+    }
+
+    /* 评分公式：固定每行两个（2×2），禁止横向滚动条，靠缩小字号适配列宽 */
+    .header-formula--row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 12px;
+      align-items: stretch;
+      margin-top: 10px;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .header-formula--row .formula-cell {
+      min-width: 0;
+      margin: 0 !important;
+      overflow-x: visible;
+      overflow: visible;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 7px;
+      background: var(--cloud-gray);
+      border: 1px solid var(--border-lavender);
+      border-radius: 10px;
+      min-height: 3.55rem;
+      transition:
+        border-color 0.22s ease,
+        box-shadow 0.22s ease,
+        background 0.22s ease;
+    }
+
+    .header-formula--row .formula-cell.formula-cell--hl {
+      border-color: color-mix(in srgb, var(--link-cobalt) 55%, var(--border-lavender));
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--link-cobalt) 32%, transparent);
+      background: color-mix(in srgb, var(--link-cobalt) 10%, var(--cloud-gray));
+    }
+
+    [data-theme="dark"] .header-formula--row .formula-cell.formula-cell--hl {
+      border-color: color-mix(in srgb, var(--link-cobalt) 45%, var(--border-lavender));
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--link-cobalt) 28%, transparent);
+      background: color-mix(in srgb, var(--link-cobalt) 16%, rgba(255, 255, 255, 0.05));
+    }
+
+    .header-formula--row .formula-cell.formula-cell--hl .katex .form-var {
+      border-radius: 4px;
+      padding: 0 0.1em;
+      margin: 0 -0.03em;
+      background: color-mix(in srgb, var(--link-cobalt) 24%, transparent);
+      box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--link-cobalt) 48%, transparent);
+    }
+
+    [data-theme="dark"] .header-formula--row .formula-cell.formula-cell--hl .katex .form-var {
+      background: color-mix(in srgb, var(--link-cobalt) 30%, transparent);
+      box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--link-cobalt) 42%, transparent);
+    }
+
+    .header-formula--row .formula-cell .katex-display {
+      margin: 0.1em 0 !important;
+      overflow-x: visible !important;
+      max-width: 100%;
+      text-align: center;
+    }
+
+    .header-formula--row .formula-cell .katex {
+      font-size: clamp(0.68rem, 0.9vw + 0.52rem, 0.9rem);
+      max-width: 100%;
+    }
+
+    [data-theme="dark"] .header-formula--row .formula-cell {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    @media (max-width: 480px) {
+      .header-formula--row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .impact-score-embed {
+      margin: 0;
+    }
+
+    /* 右侧主卡片：纵向分区节奏；桌面端由子项 flex 撑满高度 */
+    .sensitivity-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sensitivity-panel > h2 {
+      margin: 0;
+      padding-top: 2px;
+    }
+
+    .sensitivity-panel .sens-lead {
+      margin: 0;
+    }
+
+    /* 桌面：压缩右侧「公式 + 成绩 + 影响」，便于与左侧参数卡底边对齐 */
+    @media (min-width: 900px) {
+      .workspace-right > .sensitivity-panel {
+        padding: 16px 18px 16px;
+        gap: 10px;
+        min-height: 0;
+      }
+
+      .workspace-right .sensitivity-panel > .impact-formula-head,
+      .workspace-right .sensitivity-panel > h2,
+      .workspace-right .sensitivity-panel > .impact-score-embed,
+      .workspace-right .sensitivity-panel > .sens-lead {
+        flex-shrink: 0;
+      }
+
+      .workspace-right .sensitivity-panel > .sens-grid {
+        flex: 1 1 auto;
+        min-height: 160px;
+        align-content: stretch;
+      }
+
+      .workspace-right .sensitivity-panel > .importance-block {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        margin-top: 0;
+        padding-top: 10px;
+      }
+
+      .workspace-right .impact-formula-head {
+        margin: 0;
+        padding-bottom: 10px;
+      }
+
+      .workspace-right .impact-formula-head h2,
+      .workspace-right .sensitivity-panel > h2 {
+        font-size: var(--fs-h2);
+        margin: 0 0 6px;
+        line-height: 1.2;
+      }
+
+      .workspace-right .impact-formula-head .formula-note {
+        font-size: var(--fs-caption) !important;
+        line-height: var(--lh-body) !important;
+        margin-bottom: 6px !important;
+      }
+
+      .workspace-right .impact-formula-head .side-formula-block {
+        margin-top: 6px;
+        font-size: clamp(10px, 0.9vw + 9px, 12px);
+      }
+
+      .workspace-right .impact-formula-head .header-formula--row .side-formula-block.formula-cell {
+        font-size: clamp(9px, 0.65vw + 8px, 11px);
+      }
+
+      .workspace-right .impact-formula-head .side-formula-block .katex-display {
+        margin: 0.35em 0;
+      }
+
+      .workspace-right .impact-formula-head .header-formula--row .formula-cell .katex {
+        font-size: clamp(0.64rem, 0.62vw + 0.5rem, 0.86rem);
+      }
+
+      .workspace-right .impact-score-embed {
+        margin: 0;
+      }
+
+      .workspace-right .impact-score-embed .result-block {
+        padding: 12px 14px;
+        border-radius: 10px;
+      }
+
+      .workspace-right .impact-score-embed .result-block .label {
+        font-size: var(--fs-caption);
+        margin-bottom: 4px;
+      }
+
+      .workspace-right .impact-score-embed .result-block .value {
+        font-size: var(--fs-score-embed);
+      }
+
+      .workspace-right .sensitivity-panel .sens-lead {
+        margin: 0;
+        font-size: var(--fs-caption);
+        line-height: var(--lh-snug);
+      }
+
+      .workspace-right .sens-grid {
+        gap: 8px;
+      }
+
+      @media (min-width: 1000px) {
+        .workspace-right .sens-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-rows: auto;
+        }
+      }
+
+      @media (min-width: 900px) and (max-width: 999px) {
+        .workspace-right .sens-grid {
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: repeat(2, auto);
+        }
+      }
+
+      .workspace-right .sens-cell {
+        padding: 8px 8px 6px;
+        border-radius: 10px;
+        min-height: 0;
+        align-items: stretch;
+      }
+
+      .workspace-right .sens-cell h4 {
+        font-size: var(--fs-sub);
+        margin: 0 0 4px;
+      }
+
+      .workspace-right .sens-cell .sens-chart-host {
+        flex: 1 1 auto;
+        align-self: stretch;
+        width: 100%;
+        min-height: 96px;
+        max-height: none;
+      }
+
+      .workspace-right .sens-cell .sens-cur {
+        font-size: var(--fs-caption);
+        margin-top: auto;
+        padding-top: 4px;
+      }
+
+      .workspace-right .importance-block h3 {
+        font-size: var(--fs-h3);
+        margin: 0 0 4px;
+      }
+
+      .workspace-right .importance-block .importance-lead {
+        margin: 0 0 8px;
+        font-size: var(--fs-sub);
+        line-height: var(--lh-snug);
+      }
+
+      .workspace-right .importance-host {
+        flex: 1 1 auto;
+        min-height: 200px;
+        width: 100%;
+      }
+
+      .workspace-right .importance-legend {
+        margin-top: 6px;
+        font-size: var(--fs-micro);
+        line-height: var(--lh-snug);
+      }
+
+      .workspace-left > .param-input-card .save-result-row {
+        margin-top: auto;
+      }
+    }
+
+    .side-formula-card .side-formula-block,
+    .impact-formula-head .side-formula-block {
+      margin: 12px 0 0;
+      color: var(--slate);
+      font-size: clamp(11px, 1.2vw + 10px, 14px);
+      line-height: 1.35;
+      overflow-x: auto;
+    }
+
+    .impact-formula-head .header-formula--row .side-formula-block.formula-cell {
+      overflow-x: visible;
+      overflow: visible;
+    }
+
+    .side-formula-card .side-formula-block .katex-display,
+    .impact-formula-head .side-formula-block .katex-display {
+      margin: 0.6em 0;
+    }
+
+    .sensitivity-panel h2 {
+      font-family: Inter, "Noto Sans SC", sans-serif;
+      font-weight: 600;
+      font-size: var(--fs-h2);
+      line-height: 1.2;
+      letter-spacing: -0.025em;
+      margin: 0;
+      color: var(--near-black);
+    }
+
+    .sensitivity-panel .impact-formula-head > h2 {
+      margin-bottom: 8px;
+    }
+
+    .sensitivity-panel .sens-lead {
+      margin: 0;
+      font-size: var(--fs-sub);
+      line-height: var(--lh-relaxed);
+      color: var(--slate);
+    }
+
+    .sens-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    /* 宽屏三图并列一行；中等宽度 2 列；窄屏单列 */
+    @media (min-width: 1000px) {
+      .sens-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 640px) and (max-width: 999px) {
+      .sens-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .sens-cell {
+      display: flex;
+      flex-direction: column;
+      background: var(--cloud-gray);
+      border: 1px solid var(--border-lavender);
+      border-radius: 12px;
+      padding: 12px 12px 8px;
+      min-width: 0;
+      min-height: 100%;
+    }
+
+    .sens-cell h4 {
+      margin: 0 0 6px;
+      font-size: var(--fs-sub);
+      font-weight: 600;
+      color: var(--near-black);
+      letter-spacing: -0.02em;
+    }
+
+    .sens-cell .sens-chart-host {
+      flex: 0 0 auto;
+      width: 100%;
+      min-height: 0;
+      min-width: 0;
+      max-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 899px) {
+      .sens-cell .sens-chart-host {
+        max-height: 200px;
+      }
+    }
+
+    .sens-cell .sens-chart-host svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 112px;
+    }
+
+    .sens-cell .sens-cur {
+      margin-top: auto;
+      padding-top: 6px;
+      font-size: var(--fs-caption);
+      color: var(--mid-slate);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .importance-block {
+      margin-top: 0;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-lavender);
+    }
+
+    .importance-block h3 {
+      margin: 0 0 8px;
+      font-size: var(--fs-h3);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--near-black);
+    }
+
+    .importance-block .importance-lead {
+      margin: 0 0 14px;
+      font-size: var(--fs-sub);
+      line-height: var(--lh-relaxed);
+      color: var(--slate);
+    }
+
+    .importance-host {
+      width: 100%;
+      min-height: 200px;
+    }
+
+    .importance-host svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .importance-legend {
+      margin-top: 10px;
+      font-size: var(--fs-caption);
+      color: var(--mid-slate);
+      line-height: var(--lh-body);
+    }
+
+    .workspace-viz--below {
+      margin-top: 24px;
+      padding: 28px 32px 40px;
+      background: var(--pure-white);
+      border: 1px solid var(--border-lavender);
+      border-radius: var(--radius-card);
+      box-shadow: var(--whisper);
+    }
+
+    .save-result-row {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-lavender);
+    }
+
+    .save-result-row .field-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .save-result-row .field-check input {
+      margin-top: 3px;
+    }
+
+    .save-result-row .btn-row {
+      margin-top: 12px;
     }
 
     .workspace-viz {
@@ -372,7 +828,7 @@
     .card h2 {
       font-family: Inter, "Noto Sans SC", sans-serif;
       font-weight: 600;
-      font-size: 20px;
+      font-size: var(--fs-h2);
       line-height: 1.2;
       letter-spacing: -0.025em;
       margin: 0 0 20px;
@@ -384,7 +840,7 @@
     }
 
     .card h2 .tag {
-      font-size: 12px;
+      font-size: var(--fs-caption);
       font-weight: 500;
       color: var(--mid-slate);
       background: rgba(96, 100, 108, 0.08);
@@ -395,7 +851,7 @@
 
     label {
       display: block;
-      font-size: 14px;
+      font-size: var(--fs-label);
       font-weight: 500;
       color: var(--slate);
       margin-bottom: 6px;
@@ -413,7 +869,7 @@
       border: 1px solid var(--input-border);
       background: var(--pure-white);
       color: var(--near-black);
-      font-size: 16px;
+      font-size: var(--fs-body);
       font-variant-numeric: tabular-nums;
     }
 
@@ -446,6 +902,7 @@
       height: 6px;
       background: var(--border-lavender);
       border-radius: 999px;
+      transition: background 0.48s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .param-slider::-webkit-slider-thumb {
@@ -458,6 +915,10 @@
       background: var(--expo-black);
       border: 2px solid var(--pure-white);
       box-shadow: var(--whisper);
+      transition:
+        background 0.48s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.35s ease,
+        box-shadow 0.35s ease;
     }
 
     .param-slider::-moz-range-track {
@@ -465,6 +926,7 @@
       background: var(--border-lavender);
       border-radius: 999px;
       border: none;
+      transition: background 0.48s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .param-slider::-moz-range-thumb {
@@ -475,12 +937,195 @@
       border: 2px solid var(--pure-white);
       box-shadow: var(--whisper);
       cursor: pointer;
+      transition:
+        background 0.48s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.35s ease,
+        box-shadow 0.35s ease;
+    }
+
+    /* 滑动条：与柱状图 / 单轮成绩奖级色（--chart-tier-*）同系；分档切换时有过渡 */
+    .param-slider.param-slider--imp-high::-webkit-slider-runnable-track {
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--chart-tier-high) 58%, var(--pure-white)),
+        color-mix(in srgb, var(--chart-tier-high) 72%, #2d6b52)
+      );
+    }
+
+    .param-slider.param-slider--imp-high::-webkit-slider-thumb {
+      background: color-mix(in srgb, var(--chart-tier-high) 32%, #1a5a42);
+      border-color: var(--pure-white);
+    }
+
+    .param-slider.param-slider--imp-mid::-webkit-slider-runnable-track {
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--chart-tier-mid) 55%, var(--pure-white)),
+        color-mix(in srgb, var(--chart-tier-mid) 68%, #a86b28)
+      );
+    }
+
+    .param-slider.param-slider--imp-mid::-webkit-slider-thumb {
+      background: color-mix(in srgb, var(--chart-tier-mid) 38%, #8a5a18);
+      border-color: var(--pure-white);
+    }
+
+    .param-slider.param-slider--imp-low::-webkit-slider-runnable-track {
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--chart-tier-low) 55%, var(--pure-white)),
+        color-mix(in srgb, var(--chart-tier-low) 70%, #a84d52)
+      );
+    }
+
+    .param-slider.param-slider--imp-low::-webkit-slider-thumb {
+      background: color-mix(in srgb, var(--chart-tier-low) 36%, #8f353c);
+      border-color: var(--pure-white);
+    }
+
+    .param-slider.param-slider--imp-high::-moz-range-track {
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--chart-tier-high) 58%, var(--pure-white)),
+        color-mix(in srgb, var(--chart-tier-high) 72%, #2d6b52)
+      );
+    }
+
+    .param-slider.param-slider--imp-high::-moz-range-thumb {
+      background: color-mix(in srgb, var(--chart-tier-high) 32%, #1a5a42);
+      border-color: var(--pure-white);
+    }
+
+    .param-slider.param-slider--imp-mid::-moz-range-track {
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--chart-tier-mid) 55%, var(--pure-white)),
+        color-mix(in srgb, var(--chart-tier-mid) 68%, #a86b28)
+      );
+    }
+
+    .param-slider.param-slider--imp-mid::-moz-range-thumb {
+      background: color-mix(in srgb, var(--chart-tier-mid) 38%, #8a5a18);
+      border-color: var(--pure-white);
+    }
+
+    .param-slider.param-slider--imp-low::-moz-range-track {
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--chart-tier-low) 55%, var(--pure-white)),
+        color-mix(in srgb, var(--chart-tier-low) 70%, #a84d52)
+      );
+    }
+
+    .param-slider.param-slider--imp-low::-moz-range-thumb {
+      background: color-mix(in srgb, var(--chart-tier-low) 36%, #8f353c);
+      border-color: var(--pure-white);
+    }
+
+    [data-theme="dark"] .param-slider.param-slider--imp-high::-webkit-slider-runnable-track {
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--chart-tier-high) 32%, var(--pure-white)),
+        color-mix(in srgb, var(--chart-tier-high) 55%, #0d3d2e)
+      );
+    }
+
+    [data-theme="dark"] .param-slider.param-slider--imp-high::-webkit-slider-thumb {
+      background: color-mix(in srgb, var(--chart-tier-high) 45%, #22c55e);
+    }
+
+    [data-theme="dark"] .param-slider.param-slider--imp-mid::-webkit-slider-runnable-track {
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--chart-tier-mid) 30%, var(--pure-white)),
+        color-mix(in srgb, var(--chart-tier-mid) 48%, #6b4a12)
+      );
+    }
+
+    [data-theme="dark"] .param-slider.param-slider--imp-mid::-webkit-slider-thumb {
+      background: color-mix(in srgb, var(--chart-tier-mid) 42%, #d97706);
+    }
+
+    [data-theme="dark"] .param-slider.param-slider--imp-low::-webkit-slider-runnable-track {
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--chart-tier-low) 32%, var(--pure-white)),
+        color-mix(in srgb, var(--chart-tier-low) 52%, #6b2d32)
+      );
+    }
+
+    [data-theme="dark"] .param-slider.param-slider--imp-low::-webkit-slider-thumb {
+      background: color-mix(in srgb, var(--chart-tier-low) 40%, #ef4444);
+    }
+
+    [data-theme="dark"] .param-slider.param-slider--imp-high::-moz-range-track {
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--chart-tier-high) 32%, var(--pure-white)),
+        color-mix(in srgb, var(--chart-tier-high) 55%, #0d3d2e)
+      );
+    }
+
+    [data-theme="dark"] .param-slider.param-slider--imp-high::-moz-range-thumb {
+      background: color-mix(in srgb, var(--chart-tier-high) 45%, #22c55e);
+    }
+
+    [data-theme="dark"] .param-slider.param-slider--imp-mid::-moz-range-track {
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--chart-tier-mid) 30%, var(--pure-white)),
+        color-mix(in srgb, var(--chart-tier-mid) 48%, #6b4a12)
+      );
+    }
+
+    [data-theme="dark"] .param-slider.param-slider--imp-mid::-moz-range-thumb {
+      background: color-mix(in srgb, var(--chart-tier-mid) 42%, #d97706);
+    }
+
+    [data-theme="dark"] .param-slider.param-slider--imp-low::-moz-range-track {
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--chart-tier-low) 32%, var(--pure-white)),
+        color-mix(in srgb, var(--chart-tier-low) 52%, #6b2d32)
+      );
+    }
+
+    [data-theme="dark"] .param-slider.param-slider--imp-low::-moz-range-thumb {
+      background: color-mix(in srgb, var(--chart-tier-low) 40%, #ef4444);
     }
 
     .slider-hint {
-      font-size: 12px;
+      font-size: var(--fs-caption);
       color: var(--silver);
       margin-top: 4px;
+    }
+
+    .hint-imp {
+      font-weight: 600;
+    }
+
+    .hint-imp--high {
+      color: color-mix(in srgb, var(--chart-tier-high) 28%, #145a3d);
+    }
+
+    .hint-imp--mid {
+      color: color-mix(in srgb, var(--chart-tier-mid) 32%, #7a5210);
+    }
+
+    .hint-imp--low {
+      color: color-mix(in srgb, var(--chart-tier-low) 30%, #8f2a32);
+    }
+
+    [data-theme="dark"] .hint-imp--high {
+      color: color-mix(in srgb, var(--chart-tier-high) 48%, #4ade80);
+    }
+
+    [data-theme="dark"] .hint-imp--mid {
+      color: color-mix(in srgb, var(--chart-tier-mid) 45%, #fbbf24);
+    }
+
+    [data-theme="dark"] .hint-imp--low {
+      color: color-mix(in srgb, var(--chart-tier-low) 42%, #fb7185);
     }
 
     .row2 {
@@ -494,21 +1139,14 @@
       gap: 16px;
     }
 
-    .results.results-split {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    @media (max-width: 639px) {
-      .results.results-split {
-        grid-template-columns: 1fr;
-      }
-    }
-
     .workspace-stack {
       display: flex;
       flex-direction: column;
       gap: 24px;
       min-width: 0;
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
     }
 
     .result-block {
@@ -525,7 +1163,7 @@
     }
 
     .result-block .label {
-      font-size: 14px;
+      font-size: var(--fs-label);
       color: var(--slate);
       margin-bottom: 6px;
     }
@@ -533,7 +1171,7 @@
     .result-block .value {
       font-family: Inter, "Noto Sans SC", sans-serif;
       font-weight: 700;
-      font-size: 2rem;
+      font-size: var(--fs-hero);
       line-height: 1.1;
       letter-spacing: -0.03em;
       font-variant-numeric: tabular-nums;
@@ -541,14 +1179,14 @@
     }
 
     .result-block .sub {
-      font-size: 14px;
+      font-size: var(--fs-label);
       color: var(--slate);
       margin-top: 8px;
     }
 
     .warn {
       color: var(--warning-amber);
-      font-size: 14px;
+      font-size: var(--fs-label);
       margin-top: 8px;
     }
 
@@ -566,6 +1204,65 @@
         var(--whisper);
     }
 
+    /* 与柱状图奖级色一致；用 CSS 变量连续插值，避免分档跳色 */
+    @property --score-tint-r {
+      syntax: "<number>";
+      inherits: false;
+      initial-value: 255;
+    }
+    @property --score-tint-g {
+      syntax: "<number>";
+      inherits: false;
+      initial-value: 255;
+    }
+    @property --score-tint-b {
+      syntax: "<number>";
+      inherits: false;
+      initial-value: 255;
+    }
+    @property --score-br {
+      syntax: "<number>";
+      inherits: false;
+      initial-value: 158;
+    }
+    @property --score-bg {
+      syntax: "<number>";
+      inherits: false;
+      initial-value: 203;
+    }
+    @property --score-bb {
+      syntax: "<number>";
+      inherits: false;
+      initial-value: 184;
+    }
+
+    .result-block.highlight.result-block--score-tier {
+      --score-tint-a: 0.42;
+      background: linear-gradient(
+        165deg,
+        rgba(var(--score-tint-r), var(--score-tint-g), var(--score-tint-b), var(--score-tint-a)) 0%,
+        var(--pure-white) 68%
+      );
+      border-color: rgb(var(--score-br), var(--score-bg), var(--score-bb));
+      box-shadow: var(--whisper);
+      transition:
+        --score-tint-r 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        --score-tint-g 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        --score-tint-b 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        --score-br 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        --score-bg 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        --score-bb 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="dark"] .result-block.highlight.result-block--score-tier {
+      --score-tint-a: 0.16;
+      background: linear-gradient(
+        165deg,
+        rgba(var(--score-tint-r), var(--score-tint-g), var(--score-tint-b), var(--score-tint-a)) 0%,
+        var(--pure-white) 72%
+      );
+    }
+
     .result-block--score-zero .value {
       color: #8a4b00;
     }
@@ -579,8 +1276,8 @@
       border-radius: 10px;
       border: 1px solid rgba(171, 100, 0, 0.35);
       background: rgba(171, 100, 0, 0.12);
-      font-size: 13px;
-      line-height: 1.45;
+      font-size: var(--fs-sub);
+      line-height: var(--lh-snug);
       color: #5c3d12;
     }
 
@@ -588,10 +1285,27 @@
       display: none !important;
     }
 
-    /* 显示时：入场 + 持续呼吸高光 */
-    .score-zero-banner:not([hidden]) {
+    /* 显示时：入场 + 持续呼吸高光（退出过程中不加此类） */
+    .score-zero-banner:not([hidden]):not(.score-zero-banner--exiting) {
       animation: scoreZeroBannerEnter 0.48s cubic-bezier(0.22, 1, 0.36, 1) forwards,
         scoreZeroBannerPulse 2.2s ease-in-out 0.5s infinite;
+    }
+
+    /* 退出：收起 + 淡出 */
+    .score-zero-banner.score-zero-banner--exiting {
+      animation: scoreZeroBannerExit 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+      pointer-events: none;
+    }
+
+    @keyframes scoreZeroBannerExit {
+      from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.98);
+      }
     }
 
     @keyframes scoreZeroBannerEnter {
@@ -623,14 +1337,18 @@
       background: rgba(171, 100, 0, 0.95);
       color: var(--pure-white);
       font-weight: 700;
-      font-size: 13px;
+      font-size: var(--fs-sub);
       line-height: 22px;
       text-align: center;
       font-family: Inter, system-ui, sans-serif;
     }
 
-    .score-zero-banner:not([hidden]) .score-zero-banner__mark {
+    .score-zero-banner:not([hidden]):not(.score-zero-banner--exiting) .score-zero-banner__mark {
       animation: scoreZeroMarkPulse 1.6s ease-in-out 0.4s infinite;
+    }
+
+    .score-zero-banner--exiting .score-zero-banner__mark {
+      animation: none !important;
     }
 
     @keyframes scoreZeroMarkPulse {
@@ -651,8 +1369,8 @@
       border-radius: 10px;
       border: 1px solid rgba(235, 142, 144, 0.65);
       background: rgba(235, 142, 144, 0.12);
-      font-size: 14px;
-      line-height: 1.45;
+      font-size: var(--fs-label);
+      line-height: var(--lh-snug);
       color: #9a2a2e;
     }
 
@@ -674,7 +1392,7 @@
 
     button {
       font-family: inherit;
-      font-size: 16px;
+      font-size: var(--fs-body);
       font-weight: 600;
       padding: 10px 20px;
       border-radius: var(--radius-pill);
@@ -737,7 +1455,7 @@
       padding: 12px 14px;
       border-radius: 12px;
       border: 1px solid transparent;
-      font-size: 14px;
+      font-size: var(--fs-label);
     }
 
     .snapshot-list li:hover {
@@ -747,13 +1465,13 @@
 
     .snapshot-list .meta {
       color: var(--silver);
-      font-size: 12px;
+      font-size: var(--fs-caption);
     }
 
     .compare-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 14px;
+      font-size: var(--fs-label);
       margin-top: 12px;
     }
 
@@ -788,10 +1506,18 @@
     }
 
     .formula-note {
-      font-size: 14px;
+      font-size: var(--fs-sub);
       color: var(--slate);
       margin-top: 20px;
-      line-height: 1.4;
+      line-height: var(--lh-relaxed);
+    }
+
+    .param-input-card > .formula-note.param-input-hint {
+      margin: -8px 0 16px;
+    }
+
+    .save-result-row > .formula-note:first-of-type {
+      margin: 0 0 12px;
     }
 
     /* Expo: light gallery section — white island on cloud gray */
@@ -812,7 +1538,7 @@
     .workspace-viz .section-head h2 {
       font-family: Inter, "Noto Sans SC", sans-serif;
       font-weight: 600;
-      font-size: 20px;
+      font-size: var(--fs-h2);
       line-height: 1.2;
       letter-spacing: -0.025em;
       margin: 0 0 12px;
@@ -822,20 +1548,20 @@
     /* 与页眉说明段、.formula-note 层级一致 */
     .workspace-viz .section-head .lead {
       margin: 0;
-      font-size: 14px;
-      line-height: 1.55;
+      font-size: var(--fs-sub);
+      line-height: var(--lh-relaxed);
       color: var(--slate);
       max-width: 44em;
     }
 
     @media (max-width: 899px) {
       .workspace-viz .section-head h2 {
-        font-size: 18px;
+        font-size: var(--fs-h2-sm);
       }
 
       .workspace-viz .section-head .lead {
-        font-size: 13px;
-        line-height: 1.5;
+        font-size: var(--fs-sub);
+        line-height: var(--lh-body);
       }
     }
 
@@ -849,7 +1575,7 @@
     }
 
     @media (min-width: 900px) {
-      .viz-grid {
+      .viz-grid:not(.viz-grid--single) {
         grid-template-columns: 1fr 1fr;
         align-items: start;
       }
@@ -869,7 +1595,7 @@
     .workspace-viz .card-viz-inner h3 {
       font-family: Inter, "Noto Sans SC", sans-serif;
       font-weight: 600;
-      font-size: 16px;
+      font-size: var(--fs-h3);
       line-height: 1.25;
       letter-spacing: -0.02em;
       margin: 0 0 12px;
@@ -903,8 +1629,50 @@
     /* 奖级参考横线与区间浅色底：不拦截指针 */
     .chart-host svg .chart-tier-bands rect,
     .chart-host svg .chart-tier-hlines line,
-    .chart-host svg .chart-tier-hlines text {
+    .chart-host svg .chart-tier-hlines text,
+    .chart-host svg .chart-custom-hlines line,
+    .chart-host svg .chart-custom-hlines text {
       pointer-events: none;
+    }
+
+    .custom-score-lines {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-lavender);
+    }
+
+    .custom-score-lines__title {
+      margin: 0 0 10px;
+      font-size: var(--fs-sub);
+      font-weight: 600;
+      color: var(--near-black);
+      letter-spacing: -0.02em;
+    }
+
+    .custom-score-lines__row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 16px;
+      align-items: flex-end;
+    }
+
+    .custom-score-lines__field {
+      flex: 1 1 120px;
+      min-width: 0;
+      max-width: 200px;
+    }
+
+    .custom-score-lines__field label {
+      display: block;
+      font-size: var(--fs-caption);
+      font-weight: 500;
+      color: var(--mid-slate);
+      margin-bottom: 4px;
+    }
+
+    .custom-score-lines__field input {
+      width: 100%;
+      margin-bottom: 0;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -912,91 +1680,28 @@
         transition: none;
       }
 
-      .score-zero-banner:not([hidden]),
-      .score-zero-banner:not([hidden]) .score-zero-banner__mark {
+      .score-zero-banner:not([hidden]):not(.score-zero-banner--exiting),
+      .score-zero-banner:not([hidden]):not(.score-zero-banner--exiting) .score-zero-banner__mark {
         animation: none;
       }
-    }
 
-    .ribbon-block {
-      margin-bottom: 20px;
-      flex: 0 0 auto;
-    }
+      .score-zero-banner.score-zero-banner--exiting {
+        animation: scoreZeroBannerExitReduced 0.01ms linear forwards !important;
+      }
 
-    .ribbon-block:last-child {
-      margin-bottom: 0;
-    }
-
-    .workspace-viz .ribbon-label {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--slate);
-      margin-bottom: 6px;
-    }
-
-    .card-viz-takeoff {
-      min-height: min-content;
-    }
-
-    .ribbon-host {
-      width: 100%;
-      height: 88px;
-      min-height: 88px;
-      max-height: 88px;
-      overflow: hidden;
-      line-height: 0;
-      flex-shrink: 0;
-      box-sizing: border-box;
-    }
-
-    .ribbon-host svg {
-      display: block;
-      width: 100%;
-      height: 88px;
-      max-height: 88px;
-      box-sizing: border-box;
-    }
-
-    .deploy-hint {
-      margin-top: 48px;
-      padding: 20px 24px;
-      background: var(--pure-white);
-      border: 1px solid var(--border-lavender);
-      border-radius: var(--radius-card);
-      font-size: 15px;
-      color: var(--slate);
-      box-shadow: var(--whisper);
-    }
-
-    .deploy-hint strong {
-      color: var(--near-black);
-      font-weight: 600;
-    }
-
-    .deploy-hint a {
-      color: var(--link-cobalt);
-      text-decoration: none;
-    }
-
-    .deploy-hint a:hover {
-      text-decoration: underline;
-    }
-
-    .deploy-hint code {
-      font-family: "JetBrains Mono", ui-monospace, monospace;
-      font-size: 14px;
-      background: var(--cloud-gray);
-      padding: 4px 10px;
-      border-radius: var(--radius-input);
-      border: 1px solid var(--border-lavender);
-      color: var(--near-black);
+      @keyframes scoreZeroBannerExitReduced {
+        to {
+          opacity: 0;
+        }
+      }
     }
 
     footer {
       margin-top: 48px;
       padding-top: 24px;
       border-top: 1px solid var(--border-lavender);
-      font-size: 14px;
+      font-size: var(--fs-sub);
+      line-height: var(--lh-relaxed);
       color: var(--silver);
     }
 
@@ -1008,7 +1713,7 @@
       border: 1px solid var(--input-border);
       background: var(--pure-white);
       color: var(--near-black);
-      font-size: 16px;
+      font-size: var(--fs-body);
       font-family: inherit;
       cursor: pointer;
     }
@@ -1036,7 +1741,7 @@
 
     #versionDiffTable tr.diff-stotal td {
       font-weight: 600;
-      font-size: 15px;
+      font-size: var(--fs-body);
     }
 
     /* —— 移动端与小平板 —— */
@@ -1050,34 +1755,6 @@
       header {
         margin-bottom: 32px;
         padding-bottom: 28px;
-      }
-
-      header p {
-        font-size: 16px;
-        line-height: 1.5;
-      }
-
-      header .header-intro {
-        margin-bottom: 18px;
-      }
-
-      header .header-intro p {
-        font-size: 15px;
-        margin-bottom: 12px;
-      }
-
-      header .header-note {
-        padding-top: 16px;
-        margin-top: 16px;
-      }
-
-      header .header-note p,
-      header .header-note .header-note-lead {
-        font-size: 13px;
-      }
-
-      header .header-formula {
-        font-size: clamp(12px, 3.1vw, 15px);
       }
 
       .card {
@@ -1095,18 +1772,16 @@
         margin-top: 0;
       }
 
+      .hub-lower .section-viz.section-viz {
+        margin-top: 0;
+      }
+
       .workspace-viz .section-head .lead {
-        font-size: 13px;
+        font-size: var(--fs-sub);
       }
 
       .workspace-viz .card-viz-inner {
         padding: 18px 16px;
-      }
-
-      .deploy-hint {
-        margin-top: 32px;
-        padding: 16px 18px;
-        font-size: 14px;
       }
 
       footer {
@@ -1120,17 +1795,39 @@
         padding-bottom: max(64px, env(safe-area-inset-bottom));
       }
 
+      header {
+        grid-template-columns: 1fr;
+        justify-items: stretch;
+      }
+
       header h1 {
+        grid-column: 1;
+        grid-row: 1;
+        justify-self: center;
         font-size: clamp(1.5rem, 7vw, 1.85rem);
-        letter-spacing: -0.04em;
+        letter-spacing: 0.05em;
+      }
+
+      .header-actions {
+        grid-column: 1;
+        grid-row: 2;
+        justify-self: end;
+        width: 100%;
+        gap: 10px 18px;
+        margin-top: 4px;
+      }
+
+      .header-tool-label {
+        font-size: var(--fs-caption);
+        letter-spacing: 0.05em;
       }
 
       header p {
-        font-size: 15px;
+        font-size: var(--fs-body);
       }
 
       .card h2 {
-        font-size: 18px;
+        font-size: var(--fs-h2-sm);
         gap: 8px;
       }
 
@@ -1140,7 +1837,7 @@
       }
 
       .result-block .value {
-        font-size: 1.65rem;
+        font-size: var(--fs-hero-sm);
       }
 
       .btn-row {
@@ -1178,7 +1875,7 @@
       }
 
       .compare-table {
-        font-size: 12px;
+        font-size: var(--fs-caption);
       }
 
       .compare-table th,
@@ -1197,7 +1894,11 @@
       }
 
       .workspace-viz .section-head h2 {
-        font-size: 18px;
+        font-size: var(--fs-h2-sm);
+      }
+
+      .hub-lower__title {
+        font-size: var(--fs-h2-sm);
       }
 
       .field-diffsnap {
@@ -1222,26 +1923,125 @@
       }
     }
 
-    /* —— 分数参考库 —— */
-    .ref-teaser {
-      margin-bottom: 24px;
+    /* —— 底部：成绩库与对照 —— */
+    .hub-lower {
+      flex-shrink: 0;
+      width: 100%;
+      margin-top: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 0;
     }
 
-    .ref-teaser__inner {
+    .hub-lower__head {
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-lavender);
+    }
+
+    .hub-lower__title {
+      font-family: Inter, "Noto Sans SC", sans-serif;
+      font-weight: 700;
+      font-size: var(--fs-h2);
+      letter-spacing: 0.04em;
+      margin: 0 0 8px;
+      color: var(--expo-black);
+    }
+
+    .hub-lower__lead {
+      margin: 0;
+      max-width: 48em;
+      font-size: var(--fs-sub);
+      line-height: var(--lh-relaxed);
+    }
+
+    .hub-lower__steps {
+      margin: 0;
+      padding-left: 1.25em;
+      max-width: 52em;
+      font-size: var(--fs-sub);
+      line-height: var(--lh-relaxed);
+      color: var(--slate);
+    }
+
+    .hub-lower__steps li {
+      margin-bottom: 0.35em;
+    }
+
+    .hub-lower__steps strong {
+      color: var(--near-black);
+    }
+
+    .compare-table-guide {
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      background: color-mix(in srgb, var(--cloud-gray) 88%, transparent);
+      border-radius: 8px;
+      border: 1px solid var(--border-lavender);
+    }
+
+    [data-theme="dark"] .compare-table-guide {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--border-lavender);
+    }
+
+    .hub-lower .workspace-viz--below.hub-viz {
+      margin-top: 0;
+    }
+
+    /* 底部：数据可视化 与「对照与比较」并排（stretch 使两卡同高、底边对齐） */
+    .hub-lower__viz-compare {
+      display: grid;
+      gap: 20px;
+      min-width: 0;
+      align-items: stretch;
+    }
+
+    .hub-lower__viz-compare > .hub-viz,
+    .hub-lower__viz-compare > .hub-card--compare-all {
+      min-height: 0;
+    }
+
+    @media (min-width: 1000px) {
+      .hub-lower__viz-compare {
+        grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+      }
+    }
+
+    .hub-card--ref-snaps .ref-snaps-actions {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
+      align-items: flex-end;
       justify-content: space-between;
-      gap: 16px;
+      gap: 14px 16px;
+      margin: 12px 0 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-lavender);
     }
 
-    .ref-teaser h2 {
-      margin: 0 0 6px;
-    }
-
-    .ref-teaser__note {
+    .hub-card--ref-snaps .ref-snaps-actions .formula-note {
       margin: 0;
-      max-width: 42em;
+      flex: 1 1 220px;
+      max-width: 40em;
+    }
+
+    .hub-card--compare-all > .hub-compare__block + .hub-compare__block {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border-lavender);
+    }
+
+    .hub-card--compare-all .hub-compare__sub {
+      font-family: Inter, "Noto Sans SC", sans-serif;
+      font-size: var(--fs-h3);
+      font-weight: 600;
+      margin: 0 0 8px;
+      color: var(--near-black);
+      letter-spacing: -0.02em;
+    }
+
+    .hub-card--compare-all .hub-compare__block > .formula-note:first-of-type {
+      margin-top: 0;
     }
 
     .ref-modal {
@@ -1267,6 +2067,8 @@
       z-index: 0;
       background: rgba(28, 32, 36, 0.48);
       backdrop-filter: blur(3px);
+      opacity: 0;
+      transition: opacity 0.28s ease;
     }
 
     .ref-modal__panel {
@@ -1279,6 +2081,28 @@
       display: flex;
       flex-direction: column;
       max-height: min(94vh, 920px);
+      opacity: 0;
+      transform: translateY(14px) scale(0.985);
+      transform-origin: 50% 0;
+      transition:
+        opacity 0.28s ease,
+        transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .ref-modal.ref-modal--open .ref-modal__backdrop {
+      opacity: 1;
+    }
+
+    .ref-modal.ref-modal--open .ref-modal__panel {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ref-modal__backdrop,
+      .ref-modal__panel {
+        transition-duration: 0.01ms !important;
+      }
     }
 
     .ref-modal__head {
@@ -1291,7 +2115,7 @@
 
     .ref-modal__head h2 {
       margin: 0;
-      font-size: 18px;
+      font-size: var(--fs-h2);
       font-weight: 600;
       letter-spacing: -0.02em;
       line-height: 1.25;
@@ -1300,16 +2124,97 @@
 
     .ref-modal__close {
       flex-shrink: 0;
-      font-size: 22px;
+      font-size: var(--fs-modal-close);
       line-height: 1;
       padding: 2px 10px;
       min-width: 44px;
       min-height: 44px;
+      border-radius: 10px;
+      transition:
+        transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1),
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+
+    .ref-modal__close:hover:not(:disabled) {
+      background: rgba(0, 0, 0, 0.06);
+      transform: scale(1.06) rotate(90deg);
+      box-shadow: var(--whisper);
+    }
+
+    .ref-modal__close:active:not(:disabled) {
+      transform: scale(0.92) rotate(90deg);
+      transition-duration: 0.1s;
+    }
+
+    [data-theme="dark"] .ref-modal__close:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* 弹窗底部「关闭」主按钮 */
+    .ref-modal__foot button.primary {
+      transition:
+        transform 0.2s cubic-bezier(0.34, 1.2, 0.64, 1),
+        box-shadow 0.2s ease,
+        opacity 0.2s ease,
+        filter 0.2s ease;
+    }
+
+    .ref-modal__foot button.primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: var(--elevated);
+      opacity: 1;
+    }
+
+    .ref-modal__foot button.primary:active:not(:disabled) {
+      transform: translateY(0) scale(0.98);
+      transition-duration: 0.1s;
+    }
+
+    /* 「打开成绩库」主按钮 */
+    #btnOpenRefLib {
+      transition:
+        transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1),
+        box-shadow 0.22s ease,
+        filter 0.2s ease;
+    }
+
+    #btnOpenRefLib:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: var(--elevated);
+      filter: brightness(1.05);
+      opacity: 1;
+    }
+
+    #btnOpenRefLib:active:not(:disabled) {
+      transform: translateY(0) scale(0.98);
+      transition-duration: 0.1s;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .header-info-btn,
+      .header-info-btn:hover,
+      .header-info-btn:active,
+      .ref-modal__close,
+      .ref-modal__close:hover,
+      .ref-modal__close:active,
+      .ref-modal__foot button.primary,
+      .ref-modal__foot button.primary:hover,
+      .ref-modal__foot button.primary:active,
+      #btnOpenRefLib,
+      #btnOpenRefLib:hover,
+      #btnOpenRefLib:active {
+        transform: none;
+        transition: opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+      }
     }
 
     .ref-modal__current {
       margin: 0 0 12px;
-      font-size: 14px;
+      font-size: var(--fs-label);
+      line-height: var(--lh-snug);
     }
 
     .ref-modal__current strong {
@@ -1328,7 +2233,7 @@
 
     .ref-table {
       margin-top: 0;
-      font-size: 13px;
+      font-size: var(--fs-sub);
     }
 
     .ref-table th,
@@ -1390,7 +2295,7 @@
       }
 
       .ref-table {
-        font-size: 12px;
+        font-size: var(--fs-caption);
       }
 
       .ref-table th,
@@ -1404,25 +2309,61 @@
       margin-bottom: 0;
     }
 
-    .header-toolbar {
-      display: flex;
-      justify-content: flex-end;
-      align-items: flex-start;
-      margin-bottom: 20px;
+    .page-info-modal .ref-modal__scroll.page-info-modal__scroll {
+      max-height: min(72vh, 640px);
+      padding: 20px 22px;
+      margin-top: 12px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    .theme-toggle-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 6px;
+    .page-info-modal .info-intro {
+      margin: 0 0 22px;
     }
 
-    .theme-toggle-label {
-      font-size: 12px;
-      font-weight: 500;
+    .page-info-modal .info-intro p {
+      margin: 0 0 14px;
       color: var(--slate);
-      letter-spacing: 0.02em;
+      font-size: var(--fs-body);
+      font-weight: 400;
+      line-height: var(--lh-relaxed);
+      overflow-wrap: anywhere;
+      word-wrap: break-word;
+    }
+
+    .page-info-modal .info-intro p:last-child {
+      margin-bottom: 0;
+    }
+
+    .page-info-modal .info-note {
+      margin: 0;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-lavender);
+      letter-spacing: -0.03em;
+    }
+
+    .page-info-modal .info-note p {
+      margin: 0 0 12px;
+      color: var(--mid-slate);
+      font-size: var(--fs-sub);
+      line-height: var(--lh-relaxed);
+      overflow-wrap: anywhere;
+      word-wrap: break-word;
+    }
+
+    .page-info-modal .info-note p:last-child {
+      margin-bottom: 0;
+    }
+
+    .page-info-modal .info-note .info-note-lead {
+      margin-bottom: 12px;
+      color: var(--slate);
+      font-size: var(--fs-label);
+    }
+
+    .page-info-modal .info-note strong {
+      color: var(--near-black);
+      font-weight: 600;
     }
 
     .theme-toggle {
@@ -1482,7 +2423,7 @@
       border-radius: var(--radius-pill);
       background: transparent;
       font-family: inherit;
-      font-size: 12px;
+      font-size: var(--fs-sub);
       font-weight: 500;
       color: var(--mid-slate);
       cursor: pointer;
@@ -1491,7 +2432,6 @@
 
     @media (min-width: 420px) {
       .theme-toggle__btn {
-        font-size: 13px;
         padding: 9px 8px;
       }
     }
@@ -1508,7 +2448,7 @@
     .compare-table td.compare-table__hint {
       text-align: left;
       color: var(--slate);
-      font-size: 12px;
+      font-size: var(--fs-caption);
       padding-top: 10px;
       border: none;
     }
@@ -1531,9 +2471,10 @@
 <body>
   <div class="wrap">
     <header>
-      <div class="header-toolbar">
-        <div class="theme-toggle-wrap">
-          <span class="theme-toggle-label" id="themeToggleLabel">界面主题</span>
+      <h1 id="pageTitle">无人机短距起降 · 成绩计算器</h1>
+      <div class="header-actions" role="toolbar" aria-label="页面工具">
+        <div class="header-tool">
+          <span class="header-tool-label" id="themeToggleLabel">主题</span>
           <div
             id="themeToggle"
             class="theme-toggle"
@@ -1553,71 +2494,73 @@
             </button>
           </div>
         </div>
-      </div>
-      <h1>无人机短距起降 · 单轮成绩计算器</h1>
-      <div class="header-doc">
-      <div class="header-intro">
-        <p>
-          依据《<strong>2026 中国大学生飞行器设计创新大赛竞赛规则</strong>》竞赛细则「<strong>无人机短距起降</strong>」第 6.1 条，估算<strong>单轮</strong>得分 <span style="white-space: nowrap">S<sub>turn</sub></span>。赛项口语中的「<strong>微固</strong>」即本项目（微型固定翼、短距起降与有效载荷计分）。
-        </p>
-        <p>
-          在下方填入规则中的<strong>有效载荷</strong> <span style="white-space: nowrap">W<sub>payload</sub></span>、<strong>空机质量</strong> <span style="white-space: nowrap">W<sub>empty</sub></span>、<strong>最大翼展</strong> <span style="white-space: nowrap">b</span> 与<strong>起飞距离</strong> <span style="white-space: nowrap">d</span>（与起飞区桌面设置及现场测定一致，参见规则 3.2）；右侧图表随参数更新。
-        </p>
-        <p>
-          可<strong>保存快照</strong>记录方案迭代，选<strong>基准快照</strong>查看与某一版的差值。数据仅保存在本机浏览器，换设备或清除站点数据会丢失。
-        </p>
-      </div>
-      <div class="header-formula header-formula--stack" aria-label="单轮成绩计算公式（窄屏换行）">
-        \[
-        \begin{aligned}
-        S_{\mathrm{turn}} &= 3 \cdot \frac{W_{\mathrm{payload}}}{453} \cdot M \cdot B + Z \\[0.4em]
-        M &= \frac{11}{\left(\frac{W_{\mathrm{empty}}}{453} - 1\right)^4 + 8.9} \\[0.4em]
-        B &= \begin{cases} 20, & d \le 1.2 \\ 15, & 1.2 \lt d \le 2.4 \\ 0, & d \gt 2.4 \end{cases} \\[0.4em]
-        Z &= B - \left(\frac{b}{305}\right)^{1.5}
-        \end{aligned}
-        \]
-      </div>
-      <div class="header-formula header-formula--row" aria-label="单轮成绩计算公式（宽屏横排）">
-        \[
-        \begin{aligned}
-        S_{\mathrm{turn}} &= 3 \cdot \frac{W_{\mathrm{payload}}}{453} \cdot M \cdot B + Z \quad
-        & M &= \frac{11}{\left(\frac{W_{\mathrm{empty}}}{453} - 1\right)^4 + 8.9} \quad
-        & B &= \begin{cases} 20, & d \le 1.2 \\ 15, & 1.2 \lt d \le 2.4 \\ 0, & d \gt 2.4 \end{cases} \quad
-        & Z &= B - \left(\frac{b}{305}\right)^{1.5}
-        \end{aligned}
-        \]
-      </div>
-      <div class="header-note">
-        <p class="header-note-lead"><strong>式子怎么读</strong></p>
-        <p>
-          <strong>M</strong> 由空机质量 <span style="white-space: nowrap">W<sub>empty</sub></span> 决定；<strong>B</strong> 由起飞距离 <span style="white-space: nowrap">d（m）</span> 分段取值（规则 6.1 已列出 ≤1.2 与 1.2～2.4 m 两档）。
-        </p>
-        <p>
-          <strong>Z</strong> = <span style="white-space: nowrap">B − (b/305)<sup>1.5</sup></span>，<span style="white-space: nowrap">b（mm）</span> 为最大翼展；与 <span style="white-space: nowrap">3×(W<sub>payload</sub>/453)×M×B</span> 相加得 <span style="white-space: nowrap">S<sub>turn</sub></span>。总成绩取两轮较高者（规则 6.2），本页仅算单轮。
-        </p>
-      </div>
+        <div class="header-tool">
+          <span class="header-tool-label">详情</span>
+          <button
+            type="button"
+            class="header-info-btn"
+            id="btnPageInfo"
+            aria-label="使用说明与式子解读"
+            aria-expanded="false"
+            aria-controls="pageInfoModal"
+            title="使用说明与式子解读"
+          >
+            i
+          </button>
+        </div>
       </div>
     </header>
 
-    <div class="card ref-teaser">
-      <div class="ref-teaser__inner">
-        <div>
-          <h2>分数参考 <span class="tag">成绩库</span></h2>
-          <p class="formula-note ref-teaser__note">
-            内置 <strong>2025 总决赛</strong>团体名次与双机组成绩（可作单轮对照）；库数据保存在本机浏览器，可检索、自增记录或恢复默认。
-          </p>
+    <div
+      id="pageInfoModal"
+      class="ref-modal page-info-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pageInfoTitle"
+      hidden
+    >
+      <div class="ref-modal__backdrop" id="pageInfoBackdrop" aria-hidden="true"></div>
+      <div class="ref-modal__panel card">
+        <div class="ref-modal__head">
+          <h2 id="pageInfoTitle">使用说明与式子解读</h2>
+          <button type="button" class="ghost ref-modal__close" id="pageInfoCloseX" aria-label="关闭">×</button>
         </div>
-        <button type="button" class="primary" id="btnOpenRefLib" aria-haspopup="dialog" aria-controls="refScoreModal">
-          打开成绩库
-        </button>
+        <div class="ref-modal__scroll page-info-modal__scroll">
+          <div class="info-intro">
+            <p>
+              依据《<strong>2026 中国大学生飞行器设计创新大赛竞赛规则</strong>》竞赛细则「<strong>无人机短距起降</strong>」第 6.1 条，估算<strong>单轮</strong>得分 <span style="white-space: nowrap">S<sub>turn</sub></span>。赛项口语中的「<strong>微固</strong>」即本项目（微型固定翼、短距起降与有效载荷计分）。
+            </p>
+            <p>
+              在下方填入规则中的<strong>有效载荷</strong> <span style="white-space: nowrap">W<sub>payload</sub></span>、<strong>空机质量</strong> <span style="white-space: nowrap">W<sub>empty</sub></span>、<strong>最大翼展</strong> <span style="white-space: nowrap">b</span> 与<strong>起飞距离</strong> <span style="white-space: nowrap">d</span>（与起飞区桌面设置及现场测定一致，参见规则 3.2）。<strong>左侧</strong>为参数输入与试算保存；<strong>右侧</strong>为评分公式、单轮成绩与各参数对得分的<strong>影响曲线</strong>（其余参数取当前输入值不变）。
+            </p>
+            <p>
+              在<strong>参数输入</strong>区可<strong>选择是否保存</strong>本条试算。页面下方「<strong>成绩库与对照</strong>」分为：本机<strong>总决赛库</strong>与<strong>已存试算</strong>列表、<strong>奖级参考柱图</strong>，以及三种<strong>对照方式</strong>（列表「对比」并排表、逐项差距、结果矩阵）。数据仅保存在本机浏览器，换设备或清除站点数据会丢失。
+            </p>
+          </div>
+          <div class="info-note">
+            <p class="info-note-lead"><strong>式子怎么读</strong></p>
+            <p>
+              <strong>M</strong> 由空机质量 <span style="white-space: nowrap">W<sub>empty</sub></span> 决定；<strong>B</strong> 由起飞距离 <span style="white-space: nowrap">d（m）</span> 分段取值（规则 6.1 已列出 ≤1.2 与 1.2～2.4 m 两档）。
+            </p>
+            <p>
+              <strong>Z</strong> = <span style="white-space: nowrap">B − (b/305)<sup>1.5</sup></span>，<span style="white-space: nowrap">b（mm）</span> 为最大翼展；与 <span style="white-space: nowrap">3×(W<sub>payload</sub>/453)×M×B</span> 相加得 <span style="white-space: nowrap">S<sub>turn</sub></span>。总成绩取两轮较高者（规则 6.2），本页仅算单轮。
+            </p>
+          </div>
+        </div>
+        <div class="btn-row ref-modal__foot">
+          <button type="button" class="primary" id="pageInfoCloseBtn">关闭</button>
+        </div>
       </div>
     </div>
 
     <div class="workspace-stack">
     <div class="grid workspace-main">
       <div class="workspace-left">
-        <div class="card">
+        <div class="card param-input-card">
         <h2>参数输入 <span class="tag">无人机短距起降</span></h2>
+        <p class="formula-note param-input-hint">
+          滑动条轨道颜色与右侧「参数重要性」一致：<span class="hint-imp hint-imp--high">绿</span> 更重要、<span class="hint-imp hint-imp--mid">黄</span> 居中、<span class="hint-imp hint-imp--low">红</span> 相对次要（随当前输入更新）。
+        </p>
         <div class="field">
           <label for="wp">有效载荷 W<sub>payload</sub>（g，取整）</label>
           <input
@@ -1670,115 +2613,163 @@
             id="takeoffSl"
             class="param-slider"
             min="0"
-            max="3"
+            max="2.4"
             step="0.01"
             value="1.5"
             aria-label="起飞距离滑动条"
           />
-          <input type="number" id="takeoff" step="0.01" min="0" max="3" value="1.5" />
-          <div class="slider-hint">0–3 m（步进 0.01）</div>
+          <input type="number" id="takeoff" step="0.01" min="0" max="2.4" value="1.5" />
+          <div class="slider-hint">0–2.4 m（步进 0.01）</div>
         </div>
 
-        <div class="field field-snapname">
-          <label for="snapName">版本名称</label>
-          <input
-            type="text"
-            id="snapName"
-            name="snapName"
-            maxlength="120"
-            placeholder="保存快照时必填，例如：轻载方案 v3"
-            autocomplete="off"
-            aria-describedby="snapshotSaveError"
-          />
-        </div>
-        <p class="snapshot-save-error" id="snapshotSaveError" role="alert" hidden></p>
-
-        <div class="btn-row">
-          <button type="button" class="primary" id="btnSnapshot">保存为版本快照</button>
+        <div class="save-result-row">
+          <p class="formula-note">
+            需要<strong>保存本条试算</strong>时，请勾选并填写名称后点击保存（用于比较器与快照）。
+          </p>
+          <div class="field field-check">
+            <input type="checkbox" id="chkSaveResult" name="chkSaveResult" />
+            <label for="chkSaveResult" style="margin: 0; font-weight: 400; cursor: pointer">
+              将本次试算<strong>保存到已存结果列表</strong>（用于比较器与基准对比）。保存前请填写名称。
+            </label>
+          </div>
+          <div class="field field-snapname">
+            <label for="snapName">结果名称</label>
+            <input
+              type="text"
+              id="snapName"
+              name="snapName"
+              maxlength="120"
+              placeholder="例如：轻载方案 v3（勾选保存时必填）"
+              autocomplete="off"
+              aria-describedby="snapshotSaveError"
+            />
+          </div>
+          <p class="snapshot-save-error" id="snapshotSaveError" role="alert" hidden></p>
+          <div class="btn-row">
+            <button type="button" class="primary" id="btnSaveResult">保存本条结果</button>
+          </div>
         </div>
         </div>
       </div>
 
       <div class="workspace-right">
-      <section class="section-viz workspace-viz" aria-label="数据可视化">
-      <div class="section-head">
-        <h2>数据可视化</h2>
-        <p class="lead">
-          柱状图共四根：<strong>当前试算</strong>与成绩库中<strong>一等奖 / 二等奖 / 三等奖</strong>各自「较高机组分」的<strong>组内最高分</strong>参考柱；背景中有<strong>三条横向参考线</strong>与（在有一、三等数据且一等不低于三等时）<strong>三色水平分区</strong>，对应试算柱的绿 / 黄 / 红档位。下栏为起飞距离与 <strong>B</strong> 分段标尺。
-        </p>
-      </div>
-      <div class="viz-grid">
-        <div class="card-viz-inner">
-          <h3>单轮成绩</h3>
-          <div class="chart-host" id="barChart" role="img" aria-label="当前试算与一、二、三等奖参考柱状图"></div>
-        </div>
-        <div class="card-viz-inner card-viz-takeoff">
-          <h3>起飞距离与 B 分段</h3>
-          <div class="ribbon-block">
-            <div class="ribbon-label">距 <span id="takeoffReadout">—</span> m</div>
-            <div class="ribbon-host" id="takeoffViz"></div>
-          </div>
-        </div>
-      </div>
-      </section>
-      </div>
-    </div>
-
-      <div class="card card-results">
-        <h2>计算结果</h2>
-        <div class="results results-split" id="results">
-          <div class="result-block highlight" id="scorePrimaryBlock" role="status" aria-live="polite">
-            <div class="score-zero-banner" id="scoreZeroBanner" hidden>
-              <span class="score-zero-banner__mark" aria-hidden="true">!</span>
-              <span>单轮成绩为 <strong>0</strong>：请核对规则 6.1 中起飞距离对应的 <strong>B</strong>、翼展 <strong>b</strong> 与有效载荷等；<span style="white-space: nowrap">S<sub>turn</sub></span> 最小为 0。</span>
+        <div class="card sensitivity-panel">
+          <div class="impact-formula-head">
+            <h2>评分公式 <span class="tag">规则 6.1</span></h2>
+            <p class="formula-note" style="margin: 0 0 8px">
+              与规则 6.1 一致。<strong>影响曲线</strong>为其余量固定时，<span style="white-space: nowrap">S<sub>turn</sub></span> 随该参数的变化。
+            </p>
+            <div class="header-formula--row" aria-label="单轮成绩计算公式" id="headerFormulaRow">
+              <div class="side-formula-block formula-cell" data-formula-param="wp">
+                \[
+                S_{\mathrm{turn}} = 3 \cdot \frac{\htmlClass{form-var}{W_{\mathrm{payload}}}}{453} \cdot M \cdot B + Z
+                \]
+              </div>
+              <div class="side-formula-block formula-cell" data-formula-param="we">
+                \[
+                M = \frac{11}{\left(\frac{\htmlClass{form-var}{W_{\mathrm{empty}}}}{453} - 1\right)^4 + 8.9}
+                \]
+              </div>
+              <div class="side-formula-block formula-cell" data-formula-param="d">
+                \[
+                B = \begin{cases} 20, & \htmlClass{form-var}{d} \le 1.2 \\ 15, & 1.2 \lt \htmlClass{form-var}{d} \le 2.4 \\ 0, & \htmlClass{form-var}{d} \gt 2.4 \end{cases}
+                \]
+              </div>
+              <div class="side-formula-block formula-cell" data-formula-param="b">
+                \[
+                Z = B - \left(\frac{\htmlClass{form-var}{b}}{305}\right)^{1.5}
+                \]
+              </div>
             </div>
-            <div class="label">单轮成绩 S<sub>turn</sub></div>
-            <div class="value" id="outS">—</div>
-            <div class="warn" id="warn1" hidden></div>
           </div>
-          <div class="result-block">
-            <div class="label">分项系数（B、M、Z）</div>
-            <div class="sub" id="detail1"></div>
+
+          <h2>各参数对得分的影响</h2>
+
+          <div class="results impact-score-embed" id="results">
+            <div class="result-block highlight" id="scorePrimaryBlock" role="status" aria-live="polite">
+              <div class="score-zero-banner" id="scoreZeroBanner" hidden>
+                <span class="score-zero-banner__mark" aria-hidden="true">!</span>
+                <span>单轮成绩为 <strong>0</strong>：请核对规则 6.1 中起飞距离对应的 <strong>B</strong>、翼展 <strong>b</strong> 与有效载荷等；<span style="white-space: nowrap">S<sub>turn</sub></span> 最小为 0。</span>
+              </div>
+              <div class="label">单轮成绩 S<sub>turn</sub></div>
+              <div class="value" id="outS">—</div>
+              <div class="warn" id="warn1" hidden></div>
+            </div>
+          </div>
+
+          <p class="sens-lead">
+            横轴为参数、纵轴为 <span style="white-space: nowrap">S<sub>turn</sub></span>，<strong>竖线</strong>为当前值。下方按全范围落差 Δ 排序（起飞距离有效范围为 0–2.4 m，<strong>d</strong> 在 <strong>B</strong> 分段处可能跳变）。
+          </p>
+          <div class="sens-grid">
+            <div class="sens-cell">
+              <h4>W<sub>payload</sub>（g）</h4>
+              <div class="sens-chart-host" id="sensChartWp" role="img" aria-label="有效载荷与单轮成绩关系曲线"></div>
+              <div class="sens-cur" id="sensCurWp">当前：—</div>
+            </div>
+            <div class="sens-cell">
+              <h4>W<sub>empty</sub>（g）</h4>
+              <div class="sens-chart-host" id="sensChartWe" role="img" aria-label="空机质量与单轮成绩关系曲线"></div>
+              <div class="sens-cur" id="sensCurWe">当前：—</div>
+            </div>
+            <div class="sens-cell">
+              <h4>b（mm）</h4>
+              <div class="sens-chart-host" id="sensChartB" role="img" aria-label="翼展与单轮成绩关系曲线"></div>
+              <div class="sens-cur" id="sensCurB">当前：—</div>
+            </div>
+          </div>
+
+          <div class="importance-block">
+            <h3>参数重要性排序</h3>
+            <p class="importance-lead">
+              其余量固定，单参数在滑块全范围内扫一遍，<strong>Δ = max(S) − min(S)</strong>。<strong>Δ 越大</strong>通常越值得优先调（受规则分段等约束）。
+            </p>
+            <div class="importance-host" id="paramImportanceHost" role="img" aria-label="各参数全范围得分落差排序"></div>
+            <p class="importance-legend" id="paramImportanceLegend"></p>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="card" style="margin-top: 24px">
-      <h2>版本差距 <span class="tag">相对快照</span></h2>
-      <p class="formula-note" style="margin-top: 0">
-        选定一条已保存的快照作为<strong>基准版本</strong>，表格展示<strong>当前值、基准值与差值 Δ</strong>（当前 − 基准）。便于在迭代调参时一眼看到参数与分数变化方向。
-      </p>
-      <div class="field field-diffsnap">
-        <label for="diffSnapSelect">基准快照</label>
-        <select id="diffSnapSelect" aria-label="选择用于对比的版本快照">
-          <option value="">— 请选择快照 —</option>
-        </select>
-      </div>
-      <p class="formula-note" id="versionDiffEmpty" hidden>暂无快照：先在「参数输入」中点击「保存为版本快照」。</p>
-      <div class="table-scroll" id="versionDiffTableWrap" hidden>
-        <table class="compare-table" id="versionDiffTable" hidden>
-          <thead>
-            <tr>
-              <th>项目</th>
-              <th>当前</th>
-              <th>基准</th>
-              <th>Δ（当前−基准）</th>
-            </tr>
-          </thead>
-          <tbody id="versionDiffBody"></tbody>
-        </table>
-      </div>
     </div>
 
-    <div class="card" style="margin-top: 48px">
-        <h2>版本快照 <span class="tag">迭代对比</span></h2>
-        <p class="formula-note" style="margin-top: 0; margin-bottom: 16px">
-          在「参数输入」中填写<strong>版本名称</strong>后，点击<strong>保存为版本快照</strong>即可加入下列列表。
+    <section class="hub-lower" aria-labelledby="hubLowerTitle">
+      <div class="hub-lower__head">
+        <h2 id="hubLowerTitle" class="hub-lower__title">成绩库与对照</h2>
+        <ol class="hub-lower__steps" aria-label="本区分块说明">
+          <li>
+            <strong>本机数据</strong>：打开<strong>总决赛成绩库</strong>检索 / 自填入库；下方列表为「参数输入」保存的<strong>已存试算</strong>（原称快照，与库条目来源不同）。
+          </li>
+          <li>
+            <strong>奖级参考图</strong>：柱图为当前试算与<strong>库内各奖级</strong>参考柱；自定分数线仅画在图上，与右侧对照表无直接联动。
+          </li>
+          <li>
+            <strong>对照工具</strong>：列表「对比」展开<strong>三列并排表</strong>（当前 + 最多两条试算）；再往下「逐项差距」专看<strong>当前输入相对一条试算</strong>的 Δ；「结果矩阵」做<strong>基准 vs 多列</strong>（试算与库行混选，不含实时「当前」列）。
+          </li>
+        </ol>
+      </div>
+
+      <div class="card hub-card hub-card--ref-snaps">
+        <h2>已存结果与分数参考 <span class="tag">本机</span></h2>
+        <p class="formula-note" style="margin-top: 0">
+          <strong>总决赛成绩库</strong>（弹窗）：2025 团体名次与双机成绩，仅供检索与 Δ 参考，与本列表的「已存试算」不是同一数据源。<strong>已存试算</strong>仅在上方勾选保存后写入，可「载入」到输入区，或「对比」后在下方展开并排表。
+        </p>
+        <div class="ref-snaps-actions">
+          <p class="formula-note">
+            打开成绩库表格可检索学校、查看与当前试算 Δ，或将自填成绩并入本机库。
+          </p>
+          <button type="button" class="primary" id="btnOpenRefLib" aria-haspopup="dialog" aria-controls="refScoreModal">
+            打开成绩库
+          </button>
+        </div>
+        <p class="formula-note" style="margin-bottom: 12px">
+          <strong>已存试算列表</strong>（按保存时间倒序）：
         </p>
         <div class="snapshots">
           <ul class="snapshot-list" id="snapshotList"></ul>
         </div>
+        <p class="formula-note compare-table-guide" id="compareTableGuide">
+          <strong>并排对照表</strong>：在列表中点「对比」可选最多<strong>两条</strong>，下方表格显示「当前试算」与 A、B 三列数值（未选时表格隐藏）。若只需看相对<strong>一条</strong>试算的逐项 Δ，请用右侧「<strong>逐项差距（当前 − 试算）</strong>」；多方案或与总决赛库混排请用「结果比较矩阵」。
+        </p>
         <div class="table-scroll" id="compareTableWrap" hidden>
           <table class="compare-table" id="compareTable" hidden>
             <thead>
@@ -1795,7 +2786,105 @@
         <div class="btn-row" style="margin-top: 12px">
           <button type="button" class="secondary" id="btnClearSnaps">清空全部快照</button>
         </div>
-    </div>
+      </div>
+
+      <div class="hub-lower__viz-compare">
+        <section class="section-viz workspace-viz workspace-viz--below hub-viz" aria-label="奖级参考柱状图与自定分数线">
+          <div class="section-head">
+            <h2>数据可视化</h2>
+            <p class="lead">
+              柱状图共四根：<strong>当前试算</strong>与成绩库中<strong>一等奖 / 二等奖 / 三等奖</strong>各自「较高机组分」的<strong>组内最高分</strong>参考柱；背景中有<strong>三条奖级横向参考线</strong>与（在有一、三等数据且一等不低于三等时）<strong>三色水平分区</strong>，对应试算柱的绿 / 黄 / 红档位。下方可填<strong>自定分数线</strong>（最多三条），在图中以虚线标出，便于对照目标分。
+            </p>
+          </div>
+          <div class="viz-grid viz-grid--single">
+            <div class="card-viz-inner">
+              <h3>单轮成绩</h3>
+              <div class="chart-host" id="barChart" role="img" aria-label="当前试算与一、二、三等奖参考柱状图"></div>
+              <div class="custom-score-lines" aria-label="自定分数线">
+                <p class="custom-score-lines__title">自定分数线</p>
+                <div class="custom-score-lines__row">
+                  <div class="custom-score-lines__field">
+                    <label for="customScoreLine1">线 1（分）</label>
+                    <input type="number" id="customScoreLine1" step="0.01" min="0" placeholder="可选" autocomplete="off" />
+                  </div>
+                  <div class="custom-score-lines__field">
+                    <label for="customScoreLine2">线 2（分）</label>
+                    <input type="number" id="customScoreLine2" step="0.01" min="0" placeholder="可选" autocomplete="off" />
+                  </div>
+                  <div class="custom-score-lines__field">
+                    <label for="customScoreLine3">线 3（分）</label>
+                    <input type="number" id="customScoreLine3" step="0.01" min="0" placeholder="可选" autocomplete="off" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="card hub-card hub-card--compare-all">
+          <h2>对照与比较 <span class="tag">试算 / 成绩库</span></h2>
+          <p class="formula-note" style="margin-top: 0">
+            与上方「并排对照表」区分：这里<strong>不提供「当前输入」列</strong>（矩阵内均为已选中的已存试算或库行）。<strong>逐项差距</strong>专为「正在改参数」时对照<strong>一条已存试算</strong>。总决赛库行无参数时参数格为「—」，
+            <span style="white-space: nowrap">S<sub>turn</sub></span> 取<strong>两机组单轮较高分</strong>。
+          </p>
+
+          <div class="hub-compare__block">
+            <h3 class="hub-compare__sub">逐项差距（当前 − 试算）</h3>
+            <p class="formula-note">相对<strong>一条已存试算</strong>看当前输入的数值差（含 <span style="white-space: nowrap">S<sub>turn</sub></span>）。与「结果矩阵」不同：矩阵里都是<strong>已保存/库内</strong>条目之间的对比。</p>
+            <div class="field field-diffsnap">
+              <label for="diffSnapSelect">基准试算</label>
+              <select id="diffSnapSelect" aria-label="选择一条已存试算作为对照基准">
+                <option value="">— 请选择试算 —</option>
+              </select>
+            </div>
+            <p class="formula-note" id="versionDiffEmpty" hidden>暂无已存结果：请先在「参数输入」区勾选保存并点击「保存本条结果」。</p>
+            <div class="table-scroll" id="versionDiffTableWrap" hidden>
+              <table class="compare-table" id="versionDiffTable" hidden>
+                <thead>
+                  <tr>
+                    <th>项目</th>
+                    <th>当前</th>
+                    <th>基准</th>
+                    <th>Δ（当前−基准）</th>
+                  </tr>
+                </thead>
+                <tbody id="versionDiffBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="hub-compare__block">
+            <h3 class="hub-compare__sub">结果比较矩阵（基准 vs 多列）</h3>
+            <p class="formula-note">
+              任选<strong>一条基准</strong>与<strong>一条或多条对比</strong>（已存试算与总决赛库混选，勿与基准重复）。对比列括号内为（对比 − 基准）；仅当两边都是试算时，参数行才显示差值。
+            </p>
+            <div class="field field-diffsnap">
+              <label for="compBaselineSelect">基准结果</label>
+              <select id="compBaselineSelect" aria-label="选择基准：已存试算或总决赛成绩库">
+                <option value="">— 请选择基准 —</option>
+              </select>
+            </div>
+            <div class="field" style="margin-top: 12px">
+              <label for="compTargetsSelect">对比结果（按住 Ctrl / ⌘ 多选）</label>
+              <select
+                id="compTargetsSelect"
+                multiple
+                size="5"
+                aria-label="选择一个或多个对比项：已存试算或总决赛成绩库"
+                style="min-height: 120px; padding: 8px"
+              ></select>
+            </div>
+            <p class="formula-note" id="compMatrixEmpty" hidden>请先选择基准与至少一个对比项。</p>
+            <div class="table-scroll" id="compMatrixWrap" hidden>
+              <table class="compare-table" id="compMatrixTable">
+                <thead id="compMatrixHead"></thead>
+                <tbody id="compMatrixBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <div
       id="refScoreModal"
@@ -1863,13 +2952,6 @@
           <button type="button" class="primary" id="refModalCloseBtn">关闭</button>
         </div>
       </div>
-    </div>
-
-    <div class="deploy-hint">
-      <strong>如何让别人访问：</strong> 本页为纯静态文件，将整个文件夹上传到
-      <a href="https://pages.github.com/" target="_blank" rel="noopener">GitHub Pages</a>、
-      <a href="https://www.netlify.com/" target="_blank" rel="noopener">Netlify</a>
-      或任意静态托管即可；也可用 <code>npx serve .</code> 在局域网内临时分享。
     </div>
 
     <footer>
@@ -1954,11 +3036,824 @@
         };
       }
 
-      function formatDetail(r) {
-        return "B=" + r.B + "，M=" + r.M.toFixed(4) + "，Z=" + r.Z.toFixed(2);
+      const DIFF_IDX_KEY = "model-aircraft-diff-base-idx";
+      const COMP_BASE_KEY = "model-aircraft-comp-base-idx";
+
+      /** 参数重要性上一帧的 key 顺序（与 rows.sort 后一致），用于排序变化时的位移动画 */
+      let lastImportanceOrderKeys = null;
+
+      function prefersReducedMotion() {
+        return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       }
 
-      const DIFF_IDX_KEY = "model-aircraft-diff-base-idx";
+      function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+      }
+
+      function getImportanceGroupTranslateY(g) {
+        const tr = g.getAttribute("transform") || "";
+        const m = /translate\(\s*0\s*,\s*([-0-9.eE]+)\s*\)/.exec(tr);
+        return m ? parseFloat(m[1]) : 0;
+      }
+
+      /**
+       * SVG 组从 y0 动画到 y1（仅改 transform）。
+       * 用 isConnected 判断节点是否仍挂在文档中；勿用全局 generation 与 update 抢跑，否则滑块高频重绘会立刻取消动画。
+       */
+      function animateImportanceGroupY(g, y0, y1, durationMs) {
+        if (!g) return;
+        if (g._impAnimRaf != null) {
+          cancelAnimationFrame(g._impAnimRaf);
+          g._impAnimRaf = null;
+        }
+        const dur = Math.max(0, durationMs);
+        if (dur <= 0 || y0 === y1) {
+          g.setAttribute("transform", "translate(0," + y1 + ")");
+          return;
+        }
+        const t0 = performance.now();
+        function frame(now) {
+          if (!g.isConnected) {
+            g._impAnimRaf = null;
+            return;
+          }
+          const u = Math.min(1, (now - t0) / dur);
+          const y = y0 + (y1 - y0) * easeOutCubic(u);
+          g.setAttribute("transform", "translate(0," + y + ")");
+          if (u < 1) g._impAnimRaf = requestAnimationFrame(frame);
+          else {
+            g._impAnimRaf = null;
+            g.setAttribute("transform", "translate(0," + y1 + ")");
+          }
+        }
+        g._impAnimRaf = requestAnimationFrame(frame);
+      }
+
+      /** 固定其余输入，单参数扫描曲线 + 当前值竖线 */
+      function renderSensitivityCharts() {
+        const P = chartPalette();
+        const accent =
+          getComputedStyle(document.documentElement).getPropertyValue("--legal-blue").trim() || "#476cff";
+        const wp0 = roundInt(document.getElementById("wp").value);
+        const we0 = roundInt(document.getElementById("we").value);
+        const b0 = roundInt(document.getElementById("b").value);
+        const t0 = Number(document.getElementById("takeoff").value);
+
+        function miniLine(hostId, curEl, xMin, xMax, steps, getS, x0, fmtCur) {
+          const host = document.getElementById(hostId);
+          if (!host || !curEl) return;
+          const n = Math.max(12, steps | 0);
+          const pts = [];
+          let sMin = Infinity;
+          let sMax = -Infinity;
+          for (let i = 0; i <= n; i++) {
+            const x = xMin + (xMax - xMin) * (i / n);
+            const s = getS(x);
+            if (Number.isFinite(s)) {
+              pts.push({ x, s });
+              if (s < sMin) sMin = s;
+              if (s > sMax) sMax = s;
+            }
+          }
+          if (!pts.length) return;
+          if (sMin === sMax) {
+            sMin -= 0.5;
+            sMax += 0.5;
+          }
+          /* 纵轴留边：曲线在灰色绘图区内上下留白，视觉更居中 */
+          const sSpan0 = sMax - sMin || 1;
+          const yMargin = Math.max(sSpan0 * 0.07, 0.4);
+          sMin -= yMargin;
+          sMax += yMargin;
+
+          const pad = { l: 26, r: 4, t: 8, b: 14 };
+          const w = Math.max(host.clientWidth || 260, 160);
+          let hPx = host.clientHeight;
+          if (!hPx || hPx < 40) hPx = host.getBoundingClientRect().height;
+          if (!hPx || hPx < 40) hPx = 100;
+          const h = Math.max(76, Math.min(108, Math.round(hPx)));
+          const innerW = w - pad.l - pad.r;
+          const innerH = h - pad.t - pad.b;
+          const span = xMax - xMin || 1;
+          const sSpan = sMax - sMin || 1;
+          function xScale(xv) {
+            return pad.l + ((xv - xMin) / span) * innerW;
+          }
+          function yScale(sv) {
+            return pad.t + innerH * (1 - (sv - sMin) / sSpan);
+          }
+          let dPath = "";
+          pts.forEach(function (p, i) {
+            const px = xScale(p.x);
+            const py = yScale(p.s);
+            dPath += (i === 0 ? "M " : " L ") + px + " " + py;
+          });
+          const xClamped = Math.min(xMax, Math.max(xMin, x0));
+          const s0 = getS(xClamped);
+          const cx = xScale(xClamped);
+          const cy = yScale(Math.min(sMax, Math.max(sMin, Number.isFinite(s0) ? s0 : sMin)));
+
+          curEl.textContent =
+            "当前：" +
+            fmtCur(xClamped) +
+            " → S=" +
+            (Number.isFinite(s0) ? s0.toFixed(2) : "—");
+
+          const NS = "http://www.w3.org/2000/svg";
+          host.textContent = "";
+          const svg = document.createElementNS(NS, "svg");
+          svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+          svg.setAttribute("width", String(w));
+          svg.setAttribute("height", String(h));
+          const path = document.createElementNS(NS, "path");
+          path.setAttribute("d", dPath);
+          path.setAttribute("fill", "none");
+          path.setAttribute("stroke", P.black);
+          path.setAttribute("stroke-width", "1.65");
+          path.setAttribute("stroke-linejoin", "round");
+          path.setAttribute("stroke-linecap", "round");
+          svg.appendChild(path);
+          const vline = document.createElementNS(NS, "line");
+          vline.setAttribute("x1", String(cx));
+          vline.setAttribute("x2", String(cx));
+          vline.setAttribute("y1", String(pad.t));
+          vline.setAttribute("y2", String(pad.t + innerH));
+          vline.setAttribute("stroke", accent);
+          vline.setAttribute("stroke-width", "1.2");
+          vline.setAttribute("stroke-dasharray", "4 3");
+          vline.setAttribute("opacity", "0.9");
+          svg.appendChild(vline);
+          const circ = document.createElementNS(NS, "circle");
+          circ.setAttribute("cx", String(cx));
+          circ.setAttribute("cy", String(cy));
+          circ.setAttribute("r", "4");
+          circ.setAttribute("fill", accent);
+          svg.appendChild(circ);
+          const tTop = document.createElementNS(NS, "text");
+          tTop.setAttribute("x", "2");
+          tTop.setAttribute("y", String(pad.t + 10));
+          tTop.setAttribute("fill", P.slate);
+          tTop.setAttribute("font-size", "9");
+          tTop.setAttribute("font-family", "Inter, Noto Sans SC, sans-serif");
+          tTop.textContent = sMax.toFixed(1);
+          svg.appendChild(tTop);
+          const tBot = document.createElementNS(NS, "text");
+          tBot.setAttribute("x", "2");
+          tBot.setAttribute("y", String(pad.t + innerH + 2));
+          tBot.setAttribute("fill", P.slate);
+          tBot.setAttribute("font-size", "9");
+          tBot.setAttribute("font-family", "Inter, Noto Sans SC, sans-serif");
+          tBot.textContent = sMin.toFixed(1);
+          svg.appendChild(tBot);
+          host.appendChild(svg);
+        }
+
+        miniLine(
+          "sensChartWp",
+          document.getElementById("sensCurWp"),
+          0,
+          2000,
+          50,
+          function (xv) {
+            return computeTurn(xv, we0, b0, t0).S;
+          },
+          wp0,
+          function (x) {
+            return String(Math.round(x)) + " g";
+          }
+        );
+        miniLine(
+          "sensChartWe",
+          document.getElementById("sensCurWe"),
+          0,
+          2000,
+          50,
+          function (xv) {
+            return computeTurn(wp0, xv, b0, t0).S;
+          },
+          we0,
+          function (x) {
+            return String(Math.round(x)) + " g";
+          }
+        );
+        miniLine(
+          "sensChartB",
+          document.getElementById("sensCurB"),
+          0,
+          4000,
+          48,
+          function (xv) {
+            return computeTurn(wp0, we0, xv, t0).S;
+          },
+          b0,
+          function (x) {
+            return String(Math.round(x)) + " mm";
+          }
+        );
+
+        const impactDeltas = computeImpactDeltas(wp0, we0, b0, t0);
+        renderParamImportanceBars(wp0, we0, b0, t0, impactDeltas);
+        applySliderImportanceClasses(impactDeltas);
+      }
+
+      /** 与重要性条形图相同度量：单参数全范围扫描下 max(S)−min(S) */
+      function computeImpactDeltas(wp0, we0, b0, t0) {
+        let lo;
+        let hi;
+        let s;
+
+        lo = Infinity;
+        hi = -Infinity;
+        for (let wp = 0; wp <= 2000; wp++) {
+          s = computeTurn(wp, we0, b0, t0).S;
+          if (s < lo) lo = s;
+          if (s > hi) hi = s;
+        }
+        const dWp = hi - lo;
+
+        lo = Infinity;
+        hi = -Infinity;
+        for (let we = 0; we <= 2000; we++) {
+          s = computeTurn(wp0, we, b0, t0).S;
+          if (s < lo) lo = s;
+          if (s > hi) hi = s;
+        }
+        const dWe = hi - lo;
+
+        lo = Infinity;
+        hi = -Infinity;
+        for (let b = 0; b <= 4000; b++) {
+          s = computeTurn(wp0, we0, b, t0).S;
+          if (s < lo) lo = s;
+          if (s > hi) hi = s;
+        }
+        const dB = hi - lo;
+
+        lo = Infinity;
+        hi = -Infinity;
+        for (let i = 0; i <= 600; i++) {
+          const d = (2.4 * i) / 600;
+          s = computeTurn(wp0, we0, b0, d).S;
+          if (s < lo) lo = s;
+          if (s > hi) hi = s;
+        }
+        const dD = hi - lo;
+
+        return { wp: dWp, we: dWe, b: dB, d: dD };
+      }
+
+      const SLIDER_IMP_CLASSES = ["param-slider--imp-high", "param-slider--imp-mid", "param-slider--imp-low"];
+
+      function applySliderImportanceClasses(deltas) {
+        const map = [
+          { id: "wpSl", delta: deltas.wp },
+          { id: "weSl", delta: deltas.we },
+          { id: "bSl", delta: deltas.b },
+          { id: "takeoffSl", delta: deltas.d },
+        ];
+        map.sort(function (a, b) {
+          const d = b.delta - a.delta;
+          if (d !== 0) return d;
+          return a.id.localeCompare(b.id);
+        });
+        map.forEach(function (item, idx) {
+          const el = document.getElementById(item.id);
+          if (!el) return;
+          SLIDER_IMP_CLASSES.forEach(function (c) {
+            el.classList.remove(c);
+          });
+          const tier = idx === 0 ? "param-slider--imp-high" : idx === 3 ? "param-slider--imp-low" : "param-slider--imp-mid";
+          el.classList.add(tier);
+        });
+      }
+
+      /**
+       * 固定其余量，单参数在滑块允许范围内扫遍，用 max(S)−min(S) 作为「可调控空间」指标，用于排序谁更值得优先调。
+       */
+      /**
+       * 参数重要性条形图：复用 SVG 与各行 g 元素，避免每次 update 清空 DOM 打断换位动画。
+       * 排序变化时用 translate Y 缓动，文字/条形/Δ 随组一起移动。
+       */
+      function renderParamImportanceBars(wp0, we0, b0, t0, deltasIn) {
+        const host = document.getElementById("paramImportanceHost");
+        const leg = document.getElementById("paramImportanceLegend");
+        if (!host) return;
+        const P = chartPalette();
+        const accent =
+          getComputedStyle(document.documentElement).getPropertyValue("--legal-blue").trim() || "#0d74ce";
+
+        const d = deltasIn || computeImpactDeltas(wp0, we0, b0, t0);
+        const dWp = d.wp;
+        const dWe = d.we;
+        const dB = d.b;
+        const dD = d.d;
+
+        const rows = [
+          { key: "wp", label: "W_payload", sub: "0–2000 g", delta: dWp },
+          { key: "we", label: "W_empty", sub: "0–2000 g", delta: dWe },
+          { key: "b", label: "b 翼展", sub: "0–4000 mm", delta: dB },
+          { key: "d", label: "d 起飞距离", sub: "0–2.4 m", delta: dD },
+        ];
+        rows.sort(function (a, b) {
+          const d0 = b.delta - a.delta;
+          if (d0 !== 0) return d0;
+          return a.key.localeCompare(b.key);
+        });
+        const newOrder = rows.map(function (r) {
+          return r.key;
+        });
+        const maxD = Math.max(rows[0].delta, 1e-9);
+        const canUseOrderAnim =
+          lastImportanceOrderKeys != null &&
+          lastImportanceOrderKeys.length === newOrder.length &&
+          newOrder.every(function (k) {
+            return lastImportanceOrderKeys.indexOf(k) >= 0;
+          });
+        const orderChanged =
+          canUseOrderAnim &&
+          newOrder.some(function (k, i) {
+            return lastImportanceOrderKeys[i] !== k;
+          });
+        const wantReorderAnim = orderChanged && !prefersReducedMotion();
+
+        function marginalHint() {
+          function dSdWp() {
+            if (wp0 <= 0) return computeTurn(1, we0, b0, t0).S - computeTurn(0, we0, b0, t0).S;
+            if (wp0 >= 2000) return computeTurn(2000, we0, b0, t0).S - computeTurn(1999, we0, b0, t0).S;
+            return (computeTurn(wp0 + 1, we0, b0, t0).S - computeTurn(wp0 - 1, we0, b0, t0).S) / 2;
+          }
+          function dSdWe() {
+            if (we0 <= 0) return computeTurn(wp0, 1, b0, t0).S - computeTurn(wp0, 0, b0, t0).S;
+            if (we0 >= 2000) return computeTurn(wp0, 2000, b0, t0).S - computeTurn(wp0, 1999, b0, t0).S;
+            return (computeTurn(wp0, we0 + 1, b0, t0).S - computeTurn(wp0, we0 - 1, b0, t0).S) / 2;
+          }
+          function dSdB() {
+            if (b0 <= 0) return computeTurn(wp0, we0, 1, t0).S - computeTurn(wp0, we0, 0, t0).S;
+            if (b0 >= 4000) return computeTurn(wp0, we0, 4000, t0).S - computeTurn(wp0, we0, 3999, t0).S;
+            return (computeTurn(wp0, we0, b0 + 1, t0).S - computeTurn(wp0, we0, b0 - 1, t0).S) / 2;
+          }
+          function dSdT() {
+            const h = 0.01;
+            const dMax = 2.4;
+            if (t0 <= h) return (computeTurn(wp0, we0, b0, h).S - computeTurn(wp0, we0, b0, 0).S) / h;
+            if (t0 >= dMax - h) return (computeTurn(wp0, we0, b0, dMax).S - computeTurn(wp0, we0, b0, dMax - h).S) / h;
+            return (computeTurn(wp0, we0, b0, t0 + h).S - computeTurn(wp0, we0, b0, t0 - h).S) / (2 * h);
+          }
+          const a = dSdWp() * 100;
+          const b2 = dSdWe() * 100;
+          const c = dSdB() * 10;
+          const d3 = dSdT() * 0.1;
+          return (
+            "边际近似：+100 g 载荷 " +
+            (a >= 0 ? "+" : "") +
+            a.toFixed(2) +
+            " 分；+100 g 空机 " +
+            (b2 >= 0 ? "+" : "") +
+            b2.toFixed(2) +
+            " 分；+10 mm 翼展 " +
+            (c >= 0 ? "+" : "") +
+            c.toFixed(2) +
+            " 分；+0.10 m 起飞 " +
+            (d3 >= 0 ? "+" : "") +
+            d3.toFixed(2) +
+            " 分（B 分段可突变）。"
+          );
+        }
+
+        if (leg) leg.textContent = marginalHint();
+
+        const NS = "http://www.w3.org/2000/svg";
+        const rowH = 56;
+        const labW = 112;
+        const valW = 70;
+        const padT = 30;
+        const padB = 12;
+        const w = Math.max(host.clientWidth || 320, 280);
+        const innerW = w - labW - valW - 16;
+        const hSvg = padT + rows.length * rowH + padB;
+
+        let svg = host.querySelector(":scope > svg");
+        if (!svg) {
+          svg = document.createElementNS(NS, "svg");
+          host.appendChild(svg);
+          const title = document.createElementNS(NS, "text");
+          title.setAttribute("class", "imp-chart-title");
+          title.setAttribute("x", "0");
+          title.setAttribute("y", "13");
+          title.setAttribute("fill", P.slate);
+          title.setAttribute("font-size", "11");
+          title.setAttribute("font-weight", "600");
+          title.setAttribute("font-family", "Inter, Noto Sans SC, sans-serif");
+          title.textContent = "全范围落差 Δ（其余量固定）";
+          svg.appendChild(title);
+        } else {
+          const tEl = svg.querySelector(".imp-chart-title");
+          if (tEl) tEl.setAttribute("fill", P.slate);
+        }
+
+        svg.setAttribute("viewBox", "0 0 " + w + " " + hSvg);
+        svg.setAttribute("width", String(w));
+        svg.setAttribute("height", String(hSvg));
+
+        function ensureRowGroup(key) {
+          let g = svg.querySelector('g.imp-row[data-key="' + key + '"]');
+          if (g) return g;
+          g = document.createElementNS(NS, "g");
+          g.setAttribute("class", "imp-row");
+          g.setAttribute("data-key", key);
+          const yLab = 12;
+          const ySub = 27;
+          const yBar = 38;
+          const lab = document.createElementNS(NS, "text");
+          lab.setAttribute("class", "imp-row-lab");
+          lab.setAttribute("x", "0");
+          lab.setAttribute("y", String(yLab));
+          lab.setAttribute("fill", P.nearBlack);
+          lab.setAttribute("font-size", "11.5");
+          lab.setAttribute("font-family", "Inter, Noto Sans SC, sans-serif");
+          g.appendChild(lab);
+          const sub = document.createElementNS(NS, "text");
+          sub.setAttribute("class", "imp-row-sub");
+          sub.setAttribute("x", "0");
+          sub.setAttribute("y", String(ySub));
+          sub.setAttribute("fill", P.slate);
+          sub.setAttribute("font-size", "9.5");
+          sub.setAttribute("font-family", "Inter, Noto Sans SC, sans-serif");
+          g.appendChild(sub);
+          const track = document.createElementNS(NS, "rect");
+          track.setAttribute("class", "imp-bar-track");
+          track.setAttribute("y", String(yBar));
+          track.setAttribute("height", "9");
+          track.setAttribute("rx", "4");
+          track.setAttribute("fill", P.slate);
+          track.setAttribute("opacity", "0.12");
+          g.appendChild(track);
+          const fill = document.createElementNS(NS, "rect");
+          fill.setAttribute("class", "imp-bar-fill");
+          fill.setAttribute("y", String(yBar));
+          fill.setAttribute("height", "9");
+          fill.setAttribute("rx", "4");
+          fill.setAttribute("fill", accent);
+          g.appendChild(fill);
+          const vt = document.createElementNS(NS, "text");
+          vt.setAttribute("class", "imp-row-val");
+          vt.setAttribute("y", String(yLab));
+          vt.setAttribute("fill", P.nearBlack);
+          vt.setAttribute("font-size", "11");
+          vt.setAttribute("font-weight", "600");
+          vt.setAttribute("font-family", "JetBrains Mono, Inter, sans-serif");
+          vt.setAttribute("font-variant-numeric", "tabular-nums");
+          g.appendChild(vt);
+          svg.appendChild(g);
+          return g;
+        }
+
+        ["wp", "we", "b", "d"].forEach(ensureRowGroup);
+
+        rows.forEach(function (row, rank) {
+          const newY = padT + rank * rowH;
+          const oldIdx = wantReorderAnim ? lastImportanceOrderKeys.indexOf(row.key) : rank;
+          const oldY = padT + oldIdx * rowH;
+          const yLab = 12;
+          const ySub = 27;
+          const yBar = 38;
+          const bx = labW;
+          const bw = innerW * (row.delta / maxD);
+
+          const g = ensureRowGroup(row.key);
+          const lab = g.querySelector(".imp-row-lab");
+          const sub = g.querySelector(".imp-row-sub");
+          const track = g.querySelector(".imp-bar-track");
+          const fill = g.querySelector(".imp-bar-fill");
+          const vt = g.querySelector(".imp-row-val");
+          if (!lab || !sub || !track || !fill || !vt) return;
+
+          lab.textContent =
+            (rank === 0 ? "① " : rank === 1 ? "② " : rank === 2 ? "③ " : "④ ") + row.label;
+          lab.setAttribute("font-weight", rank === 0 ? "700" : "500");
+          lab.setAttribute("fill", P.nearBlack);
+          sub.textContent = row.sub;
+          sub.setAttribute("fill", P.slate);
+          track.setAttribute("x", String(bx));
+          track.setAttribute("width", String(innerW));
+          track.setAttribute("fill", P.slate);
+          fill.setAttribute("x", String(bx));
+          fill.setAttribute("width", String(Math.max(2, bw)));
+          fill.setAttribute("fill", accent);
+          fill.setAttribute("opacity", String(1 - rank * 0.14));
+          vt.setAttribute("x", String(bx + innerW + 8));
+          vt.setAttribute("fill", P.nearBlack);
+          vt.textContent = "Δ " + row.delta.toFixed(2);
+
+          if (wantReorderAnim && oldY !== newY) {
+            var yFrom = oldY;
+            if (g._impAnimRaf != null) {
+              yFrom = getImportanceGroupTranslateY(g);
+            } else {
+              g.setAttribute("transform", "translate(0," + oldY + ")");
+            }
+            (function (gRow, yFrom2, yTo) {
+              requestAnimationFrame(function () {
+                if (!gRow.isConnected) return;
+                requestAnimationFrame(function () {
+                  animateImportanceGroupY(gRow, yFrom2, yTo, 260);
+                });
+              });
+            })(g, yFrom, newY);
+          } else if (g._impAnimRaf == null) {
+            g.setAttribute("transform", "translate(0," + newY + ")");
+          }
+        });
+
+        lastImportanceOrderKeys = newOrder.slice();
+      }
+
+      /** 成绩库行：两机组单轮较高分，与参考表 Δ 一致 */
+      function refRowHighSturn(r) {
+        const s1 = Number(r.s1);
+        const s2 = Number(r.s2);
+        const a = Number.isFinite(s1) ? s1 : 0;
+        const b = Number.isFinite(s2) ? s2 : 0;
+        return Math.max(a, b);
+      }
+
+      function compSelectValue(type, idx) {
+        return type + ":" + idx;
+      }
+
+      function parseCompSelectValue(raw) {
+        if (raw == null || raw === "") return null;
+        const s = String(raw);
+        const colon = s.indexOf(":");
+        if (colon < 0) {
+          const n = Number(s);
+          if (!Number.isFinite(n) || n < 0) return null;
+          return { type: "snap", index: n | 0 };
+        }
+        const type = s.slice(0, colon);
+        const index = Number(s.slice(colon + 1));
+        if (type !== "snap" && type !== "ref") return null;
+        if (!Number.isFinite(index) || index < 0) return null;
+        return { type: type, index: index | 0 };
+      }
+
+      /** 旧版仅存快照下标，迁移为 snap:n */
+      function normalizeStoredCompKey(raw) {
+        if (raw == null || raw === "") return "";
+        const s = String(raw);
+        if (s.indexOf(":") >= 0) return s;
+        return "snap:" + s;
+      }
+
+      function compEntryValid(parsed, snapLen, refLen) {
+        if (!parsed) return false;
+        if (parsed.type === "snap") return parsed.index >= 0 && parsed.index < snapLen;
+        return parsed.index >= 0 && parsed.index < refLen;
+      }
+
+      function getCompEntry(parsed) {
+        if (!parsed) return null;
+        if (parsed.type === "snap") {
+          const list = loadSnapshots();
+          if (parsed.index < 0 || parsed.index >= list.length) return null;
+          return { kind: "snap", snap: list[parsed.index] };
+        }
+        const rows = getRefRows();
+        if (parsed.index < 0 || parsed.index >= rows.length) return null;
+        return { kind: "ref", ref: rows[parsed.index] };
+      }
+
+      function compEntryLabel(e) {
+        if (e.kind === "snap") return e.snap.name || "未命名";
+        const r = e.ref;
+        const sc = r.school || "未命名";
+        return sc.length > 20 ? sc.slice(0, 18) + "…（库）" : sc + "（库）";
+      }
+
+      function sturnFromCompEntry(e) {
+        if (e.kind === "snap") {
+          const t = takeoffFromSnap(e.snap);
+          return computeTurn(e.snap.wp, e.snap.we, e.snap.b, t).S;
+        }
+        return refRowHighSturn(e.ref);
+      }
+
+      function appendCompOptGroups(selectEl, list, refList) {
+        if (list.length > 0) {
+          const og = document.createElement("optgroup");
+          og.label = "已存试算";
+          list.forEach(function (s, i) {
+            const o = document.createElement("option");
+            o.value = compSelectValue("snap", i);
+            o.textContent = (s.name || "未命名") + " · S=" + (s.total != null ? s.total.toFixed(2) : "—");
+            og.appendChild(o);
+          });
+          selectEl.appendChild(og);
+        }
+        if (refList.length > 0) {
+          const og = document.createElement("optgroup");
+          og.label = "总决赛成绩库";
+          refList.forEach(function (r, i) {
+            const o = document.createElement("option");
+            o.value = compSelectValue("ref", i);
+            const rk = r.rank != null ? "#" + r.rank : "#" + (i + 1);
+            const hi = refRowHighSturn(r).toFixed(2);
+            const sc = r.school || "未命名";
+            const short = sc.length > 32 ? sc.slice(0, 30) + "…" : sc;
+            o.textContent = "[库 " + rk + "] " + short + " · 较高单轮 " + hi;
+            og.appendChild(o);
+          });
+          selectEl.appendChild(og);
+        }
+      }
+
+      function populateCompSelects() {
+        const list = loadSnapshots();
+        const refList = getRefRows();
+        const baseSel = document.getElementById("compBaselineSelect");
+        const tgtSel = document.getElementById("compTargetsSelect");
+        if (!baseSel || !tgtSel) return;
+        const prevBase = baseSel.value;
+        const prevTgt = Array.from(tgtSel.selectedOptions).map(function (o) {
+          return o.value;
+        });
+        baseSel.innerHTML = '<option value="">— 请选择基准 —</option>';
+        tgtSel.innerHTML = "";
+        appendCompOptGroups(baseSel, list, refList);
+        appendCompOptGroups(tgtSel, list, refList);
+
+        let newBase = prevBase;
+        if (!compEntryValid(parseCompSelectValue(normalizeStoredCompKey(newBase)), list.length, refList.length)) {
+          const saved = localStorage.getItem(COMP_BASE_KEY);
+          const migrated = normalizeStoredCompKey(saved);
+          newBase = compEntryValid(parseCompSelectValue(migrated), list.length, refList.length) ? migrated : "";
+        }
+        baseSel.value = newBase;
+        if (baseSel.value) localStorage.setItem(COMP_BASE_KEY, baseSel.value);
+        else localStorage.removeItem(COMP_BASE_KEY);
+        prevTgt.forEach(function (v) {
+          if (v === baseSel.value) return;
+          const opt = Array.from(tgtSel.options).find(function (o) {
+            return o.value === v;
+          });
+          if (opt) opt.selected = true;
+        });
+        renderCompMatrix();
+      }
+
+      function renderCompMatrix() {
+        const empty = document.getElementById("compMatrixEmpty");
+        const wrap = document.getElementById("compMatrixWrap");
+        const head = document.getElementById("compMatrixHead");
+        const body = document.getElementById("compMatrixBody");
+        const baseSel = document.getElementById("compBaselineSelect");
+        const tgtSel = document.getElementById("compTargetsSelect");
+        if (!empty || !wrap || !head || !body || !baseSel || !tgtSel) return;
+
+        const list = loadSnapshots();
+        const refList = getRefRows();
+        const baseEntry = getCompEntry(parseCompSelectValue(baseSel.value));
+        const tgtEntries = Array.from(tgtSel.selectedOptions)
+          .map(function (o) {
+            return o.value;
+          })
+          .filter(function (v) {
+            return v !== "" && v !== baseSel.value;
+          })
+          .map(function (v) {
+            return getCompEntry(parseCompSelectValue(v));
+          })
+          .filter(Boolean);
+
+        if (list.length === 0 && refList.length === 0) {
+          empty.hidden = false;
+          empty.textContent = "暂无已存试算与成绩库数据。";
+          wrap.hidden = true;
+          return;
+        }
+        if (!baseEntry) {
+          empty.hidden = false;
+          empty.textContent = "请选择一个基准。";
+          wrap.hidden = true;
+          return;
+        }
+        if (tgtEntries.length === 0) {
+          empty.hidden = false;
+          empty.textContent = "请在「对比结果」中多选至少一项（勿与基准相同）。";
+          wrap.hidden = true;
+          return;
+        }
+
+        empty.hidden = true;
+        wrap.hidden = false;
+        head.innerHTML = "";
+        body.innerHTML = "";
+
+        const trh = document.createElement("tr");
+        const th0 = document.createElement("th");
+        th0.textContent = "项目";
+        trh.appendChild(th0);
+        const thB = document.createElement("th");
+        thB.textContent = "基准：" + compEntryLabel(baseEntry);
+        trh.appendChild(thB);
+        tgtEntries.forEach(function (e) {
+          const th = document.createElement("th");
+          th.textContent = compEntryLabel(e) + "（Δ）";
+          trh.appendChild(th);
+        });
+        head.appendChild(trh);
+
+        function cellParamDelta(baseNum, tgtE, getSnapVal, dec) {
+          if (tgtE.kind === "ref") return "—";
+          const nv = Number(getSnapVal(tgtE.snap));
+          if (!Number.isFinite(nv)) return "—";
+          if (!Number.isFinite(baseNum)) {
+            return dec != null ? nv.toFixed(dec) : String(Math.round(nv));
+          }
+          const d = nv - baseNum;
+          if (dec != null) {
+            return nv.toFixed(dec) + "（" + (d >= 0 ? "+" : "") + d.toFixed(dec) + "）";
+          }
+          return String(Math.round(nv)) + "（" + (d >= 0 ? "+" : "") + String(Math.round(d)) + "）";
+        }
+
+        function addParamRow(label, getSnapVal, dec) {
+          const tr = document.createElement("tr");
+          const td0 = document.createElement("td");
+          td0.textContent = label;
+          tr.appendChild(td0);
+          const tdB = document.createElement("td");
+          if (baseEntry.kind === "snap") {
+            tdB.textContent = formatParamNum(getSnapVal(baseEntry.snap), dec);
+          } else {
+            tdB.textContent = "—";
+          }
+          tr.appendChild(tdB);
+          const bv =
+            baseEntry.kind === "snap" && Number.isFinite(Number(getSnapVal(baseEntry.snap)))
+              ? Number(getSnapVal(baseEntry.snap))
+              : NaN;
+          tgtEntries.forEach(function (te) {
+            const td = document.createElement("td");
+            td.textContent = cellParamDelta(bv, te, getSnapVal, dec);
+            tr.appendChild(td);
+          });
+          body.appendChild(tr);
+        }
+
+        function addSturnRow() {
+          const tr = document.createElement("tr");
+          const td0 = document.createElement("td");
+          td0.textContent = "S_turn（单轮）";
+          tr.appendChild(td0);
+          const baseS = sturnFromCompEntry(baseEntry);
+          const tdB = document.createElement("td");
+          tdB.textContent = formatParamNum(baseS, 2);
+          tr.appendChild(tdB);
+          tgtEntries.forEach(function (te) {
+            const td = document.createElement("td");
+            const nv = sturnFromCompEntry(te);
+            if (!Number.isFinite(nv)) {
+              td.textContent = "—";
+            } else {
+              const d = nv - baseS;
+              td.textContent = nv.toFixed(2) + "（" + (d >= 0 ? "+" : "") + d.toFixed(2) + "）";
+            }
+            tr.appendChild(td);
+          });
+          body.appendChild(tr);
+        }
+
+        addParamRow(
+          "W_payload (g)",
+          function (s) {
+            return s.wp;
+          },
+          0
+        );
+        addParamRow(
+          "W_empty (g)",
+          function (s) {
+            return s.we;
+          },
+          0
+        );
+        addParamRow(
+          "b (mm)",
+          function (s) {
+            return s.b;
+          },
+          0
+        );
+        addParamRow(
+          "起飞 d (m)",
+          function (s) {
+            return takeoffFromSnap(s);
+          },
+          2
+        );
+        addSturnRow();
+      }
 
       function formatParamNum(v, decimals) {
         if (v == null || v === "") return "—";
@@ -1972,7 +3867,7 @@
         if (!sel) return;
         const list = loadSnapshots();
         const prev = sel.value;
-        sel.innerHTML = '<option value="">— 请选择快照 —</option>';
+        sel.innerHTML = '<option value="">— 请选择试算 —</option>';
         list.forEach((s, i) => {
           const opt = document.createElement("option");
           opt.value = String(i);
@@ -2034,7 +3929,7 @@
           table.hidden = true;
           if (wrap) wrap.hidden = true;
           empty.hidden = false;
-          empty.textContent = "暂无快照：请先在「参数输入」中保存至少一个版本快照。";
+          empty.textContent = "暂无已存结果：请先在「参数输入」区保存至少一条。";
           return;
         }
 
@@ -2045,7 +3940,7 @@
           table.hidden = true;
           if (wrap) wrap.hidden = true;
           empty.hidden = false;
-          empty.textContent = "请在上方下拉框中选择一个基准快照，即可查看与当前方案的逐项差距。";
+          empty.textContent = "请在上方下拉框中选择一条基准试算，即可查看与当前输入的逐项差距。";
           return;
         }
 
@@ -2138,12 +4033,207 @@
         return pal.mid;
       }
 
+      function parseCssColorToRgb(str) {
+        const s = (str || "").trim();
+        if (!s) return { r: 200, g: 200, b: 200 };
+        if (s[0] === "#") {
+          let x = s.slice(1);
+          if (x.length === 3) {
+            x = x
+              .split("")
+              .map(function (c) {
+                return c + c;
+              })
+              .join("");
+          }
+          const v = parseInt(x, 16);
+          if (Number.isNaN(v)) return { r: 200, g: 200, b: 200 };
+          return { r: (v >> 16) & 255, g: (v >> 8) & 255, b: v & 255 };
+        }
+        const m = s.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+        if (m) return { r: Number(m[1]), g: Number(m[2]), b: Number(m[3]) };
+        return { r: 200, g: 200, b: 200 };
+      }
+
+      function smoothstep01(t) {
+        t = Math.max(0, Math.min(1, t));
+        return t * t * (3 - 2 * t);
+      }
+
+      function lerpNum(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      function lerpRgb(A, B, t) {
+        return {
+          r: Math.round(lerpNum(A.r, B.r, t)),
+          g: Math.round(lerpNum(A.g, B.g, t)),
+          b: Math.round(lerpNum(A.b, B.b, t)),
+        };
+      }
+
+      /** 三等分色带：在 lo、hi 两侧阈值附近渐变，中间为 mid 色 */
+      function blendThreeScoreZones(s, lo, hi, rgbL, rgbM, rgbH) {
+        if (!Number.isFinite(lo) || !Number.isFinite(hi)) return rgbM;
+        if (lo >= hi) return rgbM;
+        const span = hi - lo;
+        const eps = Math.min(Math.max(0.28, span * 0.055), span * 0.42);
+        if (lo + eps >= hi - eps) {
+          const u = smoothstep01((s - lo) / (hi - lo));
+          return lerpRgb(lerpRgb(rgbL, rgbM, 0.5), rgbH, u);
+        }
+        if (s <= lo - eps) return rgbL;
+        if (s < lo + eps) {
+          return lerpRgb(rgbL, rgbM, smoothstep01((s - (lo - eps)) / (2 * eps)));
+        }
+        if (s <= hi - eps) return rgbM;
+        if (s < hi + eps) {
+          return lerpRgb(rgbM, rgbH, smoothstep01((s - (hi - eps)) / (2 * eps)));
+        }
+        return rgbH;
+      }
+
+      /** 两档：th 以上为 rgbAbove，以下为 rgbBelow */
+      function blendTwoScoreZones(s, th, rgbBelow, rgbAbove) {
+        if (!Number.isFinite(th)) return rgbBelow;
+        const eps = Math.max(0.32, Math.abs(th) * 0.06 + 0.12);
+        if (s <= th - eps) return rgbBelow;
+        if (s < th + eps) {
+          return lerpRgb(rgbBelow, rgbAbove, smoothstep01((s - (th - eps)) / (2 * eps)));
+        }
+        return rgbAbove;
+      }
+
+      function tierRgbDiscrete(score, H, pal, rgbH, rgbM, rgbL) {
+        const f = tierFillForAwardScores(score, H, pal);
+        if (f === pal.high) return rgbH;
+        if (f === pal.low) return rgbL;
+        return rgbM;
+      }
+
+      /**
+       * 与 tierFillForAwardScores 分区一致，在阈值附近做 RGB 平滑，避免分档跳变。
+       */
+      function scoreAccentRgb(score, H, pal, rgbH, rgbM, rgbL) {
+        const s = Number(score) || 0;
+        const h1 = H.hi1;
+        const h2 = H.hi2;
+        const h3 = H.hi3;
+
+        if (h1 != null && h3 != null) {
+          const a = Number(h3);
+          const b = Number(h1);
+          if (a < b) return blendThreeScoreZones(s, a, b, rgbL, rgbM, rgbH);
+          return tierRgbDiscrete(score, H, pal, rgbH, rgbM, rgbL);
+        }
+        if (h1 != null && h2 != null) {
+          const a = Number(h2);
+          const b = Number(h1);
+          if (a < b) return blendThreeScoreZones(s, a, b, rgbL, rgbM, rgbH);
+          return tierRgbDiscrete(score, H, pal, rgbH, rgbM, rgbL);
+        }
+        if (h2 != null && h3 != null) {
+          const a = Number(h3);
+          const b = Number(h2);
+          if (a < b) return blendThreeScoreZones(s, a, b, rgbL, rgbM, rgbH);
+          return tierRgbDiscrete(score, H, pal, rgbH, rgbM, rgbL);
+        }
+        if (h1 != null) {
+          return blendTwoScoreZones(s, Number(h1), rgbM, rgbH);
+        }
+        if (h2 != null) {
+          return blendTwoScoreZones(s, Number(h2), rgbL, rgbM);
+        }
+        if (h3 != null) {
+          return blendTwoScoreZones(s, Number(h3), rgbL, rgbM);
+        }
+        return rgbM;
+      }
+
+      function scoreAccentBorderRgb(rgb, dark) {
+        if (dark) {
+          return {
+            r: Math.round(lerpNum(rgb.r, 36, 0.58)),
+            g: Math.round(lerpNum(rgb.g, 44, 0.58)),
+            b: Math.round(lerpNum(rgb.b, 52, 0.58)),
+          };
+        }
+        return {
+          r: Math.round(Math.min(255, rgb.r * 0.5 + 52)),
+          g: Math.round(Math.min(255, rgb.g * 0.5 + 58)),
+          b: Math.round(Math.min(255, rgb.b * 0.5 + 54)),
+        };
+      }
+
+      function applyScorePrimaryTint(el, score, H, pal) {
+        if (!el) return;
+        const rgbH = parseCssColorToRgb(pal.high);
+        const rgbM = parseCssColorToRgb(pal.mid);
+        const rgbL = parseCssColorToRgb(pal.low);
+        const rgb = scoreAccentRgb(score, H, pal, rgbH, rgbM, rgbL);
+        const dark = document.documentElement.getAttribute("data-theme") === "dark";
+        const bdr = scoreAccentBorderRgb(rgb, dark);
+        el.style.setProperty("--score-tint-r", String(rgb.r));
+        el.style.setProperty("--score-tint-g", String(rgb.g));
+        el.style.setProperty("--score-tint-b", String(rgb.b));
+        el.style.setProperty("--score-br", String(bdr.r));
+        el.style.setProperty("--score-bg", String(bdr.g));
+        el.style.setProperty("--score-bb", String(bdr.b));
+        el.classList.add("result-block--score-tier");
+      }
+
+      function clearScorePrimaryTint(el) {
+        if (!el) return;
+        el.classList.remove("result-block--score-tier");
+        ["--score-tint-r", "--score-tint-g", "--score-tint-b", "--score-br", "--score-bg", "--score-bb"].forEach(function (p) {
+          el.style.removeProperty(p);
+        });
+      }
+
       /** 纵轴上限：略高于当前分，使柱高随分数连续变化（否则 max=当前分 时柱永远满格且重绘易抖） */
       function chartYMax(s) {
         const v = Math.max(0, Number(s) || 0);
         if (v <= 1e-9) return 10;
         const m = Math.max(v * 1.22, v + 0.35);
         return Math.ceil(m * 100) / 100;
+      }
+
+      const CUSTOM_SCORE_LINES_KEY = "model-aircraft-custom-score-lines-v1";
+
+      function readCustomScoreLineValues() {
+        const out = [];
+        for (let i = 1; i <= 3; i++) {
+          const el = document.getElementById("customScoreLine" + i);
+          if (!el || el.value === "" || el.value == null) {
+            out.push(null);
+            continue;
+          }
+          const v = parseFloat(el.value);
+          out.push(Number.isFinite(v) && v >= 0 ? v : null);
+        }
+        return out;
+      }
+
+      function loadCustomScoreLinesIntoInputs() {
+        try {
+          const raw = localStorage.getItem(CUSTOM_SCORE_LINES_KEY);
+          if (!raw) return;
+          const a = JSON.parse(raw);
+          if (!Array.isArray(a) || a.length !== 3) return;
+          for (let i = 0; i < 3; i++) {
+            const el = document.getElementById("customScoreLine" + (i + 1));
+            if (!el) continue;
+            const v = a[i];
+            if (v != null && Number.isFinite(Number(v))) el.value = String(Number(v));
+          }
+        } catch (_) {}
+      }
+
+      function saveCustomScoreLinesFromInputs() {
+        try {
+          const vals = readCustomScoreLineValues();
+          localStorage.setItem(CUSTOM_SCORE_LINES_KEY, JSON.stringify(vals));
+        } catch (_) {}
       }
 
       function renderBarChart(score) {
@@ -2163,6 +4253,7 @@
         const hi1 = normHi(H.hi1);
         const hi2 = normHi(H.hi2);
         const hi3 = normHi(H.hi3);
+        const customVals = readCustomScoreLineValues();
 
         const w = Math.max(host.clientWidth || 320, 280);
         const shortLab = w < 400;
@@ -2174,13 +4265,22 @@
         if (hi1 != null) tipParts.push(lab1 + " " + hi1.toFixed(2));
         if (hi2 != null) tipParts.push(lab2 + " " + hi2.toFixed(2));
         if (hi3 != null) tipParts.push(lab3 + " " + hi3.toFixed(2));
-        host.title = tipParts.length ? "奖级组内较高分峰值：" + tipParts.join(" · ") : "";
+        const customTip = customVals
+          .map(function (cv, i) {
+            return cv != null ? "线" + (i + 1) + " " + cv.toFixed(2) : null;
+          })
+          .filter(Boolean);
+        if (customTip.length) tipParts.push("自定 " + customTip.join(" · "));
+        host.title = tipParts.length ? "奖级与自定线：" + tipParts.join(" · ") : "";
 
         const maxInput = Math.max(
           value,
           hi1 != null ? hi1 : 0,
           hi2 != null ? hi2 : 0,
           hi3 != null ? hi3 : 0,
+          Math.max(0, customVals[0] != null ? customVals[0] : 0),
+          Math.max(0, customVals[1] != null ? customVals[1] : 0),
+          Math.max(0, customVals[2] != null ? customVals[2] : 0),
           1e-9
         );
         const maxVal = Math.max(chartYMax(maxInput), 1e-6);
@@ -2209,7 +4309,7 @@
         const needBuild =
           !svg ||
           Number(svg.getAttribute("data-w") || 0) !== w ||
-          svg.getAttribute("data-layout") !== "quad-tier";
+          svg.getAttribute("data-layout") !== "quad-tier-custom";
 
         function yForScore(s) {
           const t = Math.max(0, Math.min(Number(s) || 0, maxVal));
@@ -2223,7 +4323,7 @@
           svg.setAttribute("width", String(w));
           svg.setAttribute("height", String(h));
           svg.setAttribute("data-w", String(w));
-          svg.setAttribute("data-layout", "quad-tier");
+          svg.setAttribute("data-layout", "quad-tier-custom");
 
           const yLabel = document.createElementNS(NS, "text");
           yLabel.setAttribute("class", "chart-y-label");
@@ -2266,6 +4366,29 @@
             tx.setAttribute("font-family", "Inter, Noto Sans SC, sans-serif");
             tx.setAttribute("opacity", "0");
             gH.appendChild(tx);
+          });
+
+          const customStroke = ["#475569", "#7c3aed", "#0d9488"];
+          const gCustom = document.createElementNS(NS, "g");
+          gCustom.setAttribute("class", "chart-custom-hlines");
+          [1, 2, 3].forEach(function (ci) {
+            const line = document.createElementNS(NS, "line");
+            line.setAttribute("class", "custom-rule custom-rule--" + ci);
+            line.setAttribute("stroke", customStroke[ci - 1]);
+            line.setAttribute("stroke-width", "1.25");
+            line.setAttribute("stroke-dasharray", "6 4");
+            line.setAttribute("stroke-linecap", "round");
+            line.setAttribute("opacity", "0");
+            gCustom.appendChild(line);
+            const tx = document.createElementNS(NS, "text");
+            tx.setAttribute("class", "custom-rule-lab custom-rule-lab--" + ci);
+            tx.setAttribute("text-anchor", "start");
+            tx.setAttribute("fill", customStroke[ci - 1]);
+            tx.setAttribute("font-size", w < 360 ? "8.5" : "9");
+            tx.setAttribute("font-weight", "600");
+            tx.setAttribute("font-family", "Inter, Noto Sans SC, sans-serif");
+            tx.setAttribute("opacity", "0");
+            gCustom.appendChild(tx);
           });
 
           function addBarRect(x, cls, fill) {
@@ -2312,6 +4435,8 @@
           addBarTexts("bar-col--r1");
           addBarTexts("bar-col--r2");
           addBarTexts("bar-col--r3");
+
+          svg.appendChild(gCustom);
 
           host.appendChild(svg);
         }
@@ -2452,6 +4577,34 @@
             lab.setAttribute("opacity", "1");
           }
         });
+
+        const customStroke = ["#475569", "#7c3aed", "#0d9488"];
+        customVals.forEach(function (cv, idx) {
+          const ti = idx + 1;
+          const line = svg.querySelector(".custom-rule--" + ti);
+          const lab = svg.querySelector(".custom-rule-lab--" + ti);
+          if (cv == null || !Number.isFinite(cv)) {
+            if (line) line.setAttribute("opacity", "0");
+            if (lab) lab.setAttribute("opacity", "0");
+            return;
+          }
+          const yy = yForScore(cv);
+          if (line) {
+            line.setAttribute("x1", String(xL));
+            line.setAttribute("x2", String(xR));
+            line.setAttribute("y1", String(yy));
+            line.setAttribute("y2", String(yy));
+            line.setAttribute("stroke", customStroke[idx]);
+            line.setAttribute("opacity", "0.88");
+          }
+          if (lab) {
+            lab.setAttribute("x", String(xL + 4));
+            lab.setAttribute("y", String(yy - 3));
+            lab.setAttribute("fill", customStroke[idx]);
+            lab.textContent = "线" + ti + " " + cv.toFixed(2);
+            lab.setAttribute("opacity", "1");
+          }
+        });
       }
 
       function escapeSvgText(s) {
@@ -2461,139 +4614,59 @@
           .replace(/>/g, "&gt;");
       }
 
-      /** 0–3 m 标尺：三段对应 B=20 / 15 / 0，分区着色 */
-      function renderTakeoffRibbon(containerId, takeoffM) {
-        const el = document.getElementById(containerId);
-        const P = chartPalette();
-        const W = Math.max(el.clientWidth || 320, 260);
-        /* 高度需大于底部刻度文字基线 + 字形下沉；与 .ribbon-host 固定高度一致 */
-        const H = 88;
-        const pad = 8;
-        const maxM = 3;
-        const t = Number(takeoffM);
-        const xScale = (m) => pad + (Math.min(Math.max(m, 0), maxM) / maxM) * (W - 2 * pad);
+      let zeroBannerExitHandler = null;
 
-        const z1 = pad + (1.2 / maxM) * (W - 2 * pad);
-        const z2 = pad + (2.4 / maxM) * (W - 2 * pad);
-
-        const seg = {
-          a: { fill: "#b5ead7", stroke: "#5dbea5", label: "#1d6b52" },
-          b: { fill: "#ffdac1", stroke: "#e8a882", label: "#9a5c2e" },
-          c: { fill: "#ffb7b2", stroke: "#e89196", label: "#a61e3a" },
-        };
-
-        let svg =
-          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' +
-          W +
-          " " +
-          H +
-          '" preserveAspectRatio="xMidYMid meet" width="100%" height="88">';
-        svg +=
-          '<rect x="' +
-          pad +
-          '" y="22" width="' +
-          (z1 - pad) +
-          '" height="20" rx="6" fill="' +
-          seg.a.fill +
-          '" stroke="' +
-          seg.a.stroke +
-          '" stroke-opacity="0.55" stroke-width="1"/>';
-        svg +=
-          '<rect x="' +
-          z1 +
-          '" y="22" width="' +
-          (z2 - z1) +
-          '" height="20" fill="' +
-          seg.b.fill +
-          '" stroke="' +
-          seg.b.stroke +
-          '" stroke-opacity="0.55" stroke-width="1"/>';
-        svg +=
-          '<rect x="' +
-          z2 +
-          '" y="22" width="' +
-          (W - pad - z2) +
-          '" height="20" rx="6" fill="' +
-          seg.c.fill +
-          '" stroke="' +
-          seg.c.stroke +
-          '" stroke-opacity="0.55" stroke-width="1"/>';
-
-        [
-          { m: 1.2, col: seg.b },
-          { m: 2.4, col: seg.c },
-        ].forEach(({ m, col }) => {
-          const x = pad + (m / maxM) * (W - 2 * pad);
-          svg +=
-            '<line x1="' +
-            x +
-            '" y1="18" x2="' +
-            x +
-            '" y2="48" stroke="' +
-            col.stroke +
-            '" stroke-opacity="0.75" stroke-dasharray="4 3" stroke-width="1.25"/>';
-          svg +=
-            '<text x="' +
-            x +
-            '" y="14" fill="' +
-            col.label +
-            '" font-size="10" font-weight="600" text-anchor="middle" font-family="Inter, Noto Sans SC, sans-serif">' +
-            m +
-            "m</text>";
-        });
-
-        svg +=
-          '<text x="' +
-          pad +
-          '" y="82" fill="' +
-          seg.a.label +
-          '" font-size="10" font-weight="600" font-family="Inter, Noto Sans SC, sans-serif">0</text>';
-        svg +=
-          '<text x="' +
-          (W - pad) +
-          '" y="82" fill="' +
-          P.slate +
-          '" font-size="10" text-anchor="end" font-family="Inter, Noto Sans SC, sans-serif">' +
-          maxM +
-          "m</text>";
-
-        let dotStroke = P.black;
-        let dotFill = P.white;
-        if (Number.isFinite(t) && t >= 0) {
-          if (t <= 1.2) {
-            dotStroke = seg.a.label;
-            dotFill = "#e8faf3";
-          } else if (t <= 2.4) {
-            dotStroke = seg.b.label;
-            dotFill = "#fff4eb";
-          } else {
-            dotStroke = seg.c.label;
-            dotFill = "#fff0f0";
+      /** 分数由 0 变为非 0 时先播退场动画再 hidden；回到 0 时取消退场并显示 */
+      function syncZeroBannerVisibility(isZero) {
+        const el = document.getElementById("scoreZeroBanner");
+        if (!el) return;
+        if (isZero) {
+          if (zeroBannerExitHandler) {
+            el.removeEventListener("animationend", zeroBannerExitHandler);
+            zeroBannerExitHandler = null;
           }
+          if (el._zeroExitFallback) {
+            clearTimeout(el._zeroExitFallback);
+            el._zeroExitFallback = null;
+          }
+          el.classList.remove("score-zero-banner--exiting");
+          el.hidden = false;
+          return;
+        }
+        if (el.hidden) return;
+        if (prefersReducedMotion()) {
+          el.classList.remove("score-zero-banner--exiting");
+          el.hidden = true;
+          return;
+        }
+        if (el.classList.contains("score-zero-banner--exiting")) return;
+
+        function onEnd(e) {
+          if (e.target !== el) return;
+          const n = e.animationName || "";
+          if (String(n).indexOf("scoreZeroBannerExit") === -1) return;
+          el.removeEventListener("animationend", onEnd);
+          zeroBannerExitHandler = null;
+          if (el._zeroExitFallback) {
+            clearTimeout(el._zeroExitFallback);
+            el._zeroExitFallback = null;
+          }
+          el.classList.remove("score-zero-banner--exiting");
+          el.hidden = true;
         }
 
-        if (Number.isFinite(t) && t >= 0) {
-          const px = xScale(t);
-          const cx = Math.min(W - pad, Math.max(pad, px));
-          svg +=
-            '<circle cx="' +
-            cx +
-            '" cy="32" r="7" fill="' +
-            dotFill +
-            '" stroke="' +
-            dotStroke +
-            '" stroke-width="2.25"/>';
-          svg +=
-            '<text x="' +
-            cx +
-            '" y="58" fill="' +
-            dotStroke +
-            '" font-size="11" font-weight="600" font-family="Inter, Noto Sans SC, sans-serif" text-anchor="middle">' +
-            (Number.isFinite(t) ? t.toFixed(2) : "—") +
-            "</text>";
-        }
-        svg += "</svg>";
-        el.innerHTML = svg;
+        zeroBannerExitHandler = onEnd;
+        el.addEventListener("animationend", onEnd);
+        el._zeroExitFallback = setTimeout(function () {
+          el._zeroExitFallback = null;
+          el.removeEventListener("animationend", onEnd);
+          zeroBannerExitHandler = null;
+          el.classList.remove("score-zero-banner--exiting");
+          el.hidden = true;
+        }, 480);
+        requestAnimationFrame(function () {
+          el.classList.add("score-zero-banner--exiting");
+        });
       }
 
       function update() {
@@ -2602,15 +4675,19 @@
         const score = r.S;
 
         document.getElementById("outS").textContent = r.S.toFixed(2);
-        document.getElementById("detail1").textContent = formatDetail(r);
-
-        document.getElementById("takeoffReadout").textContent = Number(x.takeoff).toFixed(2);
 
         const primaryBlock = document.getElementById("scorePrimaryBlock");
-        const zeroBanner = document.getElementById("scoreZeroBanner");
         const isZero = r.S === 0;
+        primaryBlock.classList.remove("result-block--tier-high", "result-block--tier-mid", "result-block--tier-low");
         primaryBlock.classList.toggle("result-block--score-zero", isZero);
-        zeroBanner.hidden = !isZero;
+        syncZeroBannerVisibility(isZero);
+        if (!isZero) {
+          const awardHi = getAwardTierMaxHighs();
+          const pal = chartTierColors();
+          applyScorePrimaryTint(primaryBlock, score, awardHi, pal);
+        } else {
+          clearScorePrimaryTint(primaryBlock);
+        }
 
         const w1 = document.getElementById("warn1");
         w1.hidden = !r.warn;
@@ -2618,7 +4695,7 @@
 
         renderCompareTable();
         renderBarChart(score);
-        renderTakeoffRibbon("takeoffViz", x.takeoff);
+        renderSensitivityCharts();
         renderDiffTable();
 
         const refModalEl = document.getElementById("refScoreModal");
@@ -2706,6 +4783,7 @@
             ul.appendChild(li);
           });
         populateDiffSelect();
+        populateCompSelects();
         renderDiffTable();
       }
 
@@ -2848,7 +4926,7 @@
           const td = document.createElement("td");
           td.colSpan = 4;
           td.className = "compare-table__hint";
-          td.textContent = "在列表中依次点「对比」可选中最多两个快照与当前表格对照。";
+          td.textContent = "在「已存试算列表」中点「对比」最多选两条，与当前试算并排对照；与右侧「逐项差距」不同，本表不显示 Δ 列。";
           tr.appendChild(td);
           body.appendChild(tr);
         }
@@ -2874,14 +4952,14 @@
         err.hidden = true;
         err.textContent = "";
         if (!name) {
-          err.textContent = "请填写版本名称后再保存快照。";
+          err.textContent = "请填写结果名称后再保存。";
           err.hidden = false;
           nameEl.classList.add("snapshot-name-invalid");
           nameEl.focus();
           return false;
         }
         if (r.S === 0) {
-          err.textContent = "当前单轮成绩为 0，不能保存快照。请调整参数使得分大于 0 后再保存。";
+          err.textContent = "当前单轮成绩为 0，不能保存。请调整参数使得分大于 0 后再保存。";
           err.hidden = false;
           return false;
         }
@@ -2903,25 +4981,45 @@
         renderCompareTable();
       }
 
-      document.getElementById("btnSnapshot").addEventListener("click", () => {
+      document.getElementById("btnSaveResult").addEventListener("click", function () {
+        const chk = document.getElementById("chkSaveResult");
+        if (!chk || !chk.checked) {
+          window.alert("请先勾选「将本次试算保存到已存结果列表」，再点击保存。");
+          return;
+        }
         if (!validateSnapshotBeforeSave()) return;
         const n = document.getElementById("snapName").value.trim();
         pushSnapshot(n);
         document.getElementById("snapName").value = "";
+        chk.checked = false;
         clearSnapshotSaveError();
       });
 
       document.getElementById("snapName").addEventListener("input", clearSnapshotSaveError);
 
       document.getElementById("btnClearSnaps").addEventListener("click", () => {
-        if (confirm("确定清空所有快照？")) {
+        if (confirm("确定清空所有已存结果？")) {
           localStorage.removeItem(STORAGE_KEY);
           localStorage.removeItem(DIFF_IDX_KEY);
+          localStorage.removeItem(COMP_BASE_KEY);
           comparePick = [];
           renderSnapshotList();
           renderCompareTable();
         }
       });
+
+      document.getElementById("compBaselineSelect").addEventListener("change", function () {
+        if (this.value) localStorage.setItem(COMP_BASE_KEY, this.value);
+        else localStorage.removeItem(COMP_BASE_KEY);
+        const tgt = document.getElementById("compTargetsSelect");
+        if (tgt) {
+          Array.from(tgt.options).forEach(function (o) {
+            if (o.value === this.value) o.selected = false;
+          }, this);
+        }
+        renderCompMatrix();
+      });
+      document.getElementById("compTargetsSelect").addEventListener("change", renderCompMatrix);
 
       document.getElementById("diffSnapSelect").addEventListener("change", function () {
         if (this.value) localStorage.setItem(DIFF_IDX_KEY, this.value);
@@ -2934,7 +5032,7 @@
           { numId: "wp", rangeId: "wpSl", min: 0, max: 2000, decimals: null },
           { numId: "we", rangeId: "weSl", min: 0, max: 2000, decimals: null },
           { numId: "b", rangeId: "bSl", min: 0, max: 4000, decimals: null },
-          { numId: "takeoff", rangeId: "takeoffSl", min: 0, max: 3, decimals: 2 },
+          { numId: "takeoff", rangeId: "takeoffSl", min: 0, max: 2.4, decimals: 2 },
         ];
         function clamp(v, min, max) {
           if (Number.isNaN(v)) return min;
@@ -2976,6 +5074,54 @@
         });
         return syncAll;
       })();
+
+      /** 左侧参数输入聚焦时，右侧「评分公式」对应格子高亮 */
+      const FORMULA_PARAM_BY_INPUT_ID = {
+        wp: "wp",
+        wpSl: "wp",
+        we: "we",
+        weSl: "we",
+        b: "b",
+        bSl: "b",
+        takeoff: "d",
+        takeoffSl: "d",
+      };
+
+      function setFormulaParamHighlight(paramKey) {
+        const row = document.getElementById("headerFormulaRow");
+        if (!row) return;
+        row.querySelectorAll(".formula-cell[data-formula-param]").forEach(function (cell) {
+          const on = Boolean(paramKey) && cell.getAttribute("data-formula-param") === paramKey;
+          cell.classList.toggle("formula-cell--hl", on);
+        });
+      }
+
+      function wireFormulaParamHighlight() {
+        const card = document.querySelector(".param-input-card");
+        if (!card) return;
+        card.addEventListener(
+          "focusin",
+          function (e) {
+            const t = e.target;
+            if (!t || !t.id) {
+              setFormulaParamHighlight(null);
+              return;
+            }
+            const key = FORMULA_PARAM_BY_INPUT_ID[t.id];
+            setFormulaParamHighlight(key != null ? key : null);
+          },
+          true
+        );
+        card.addEventListener(
+          "focusout",
+          function (e) {
+            const next = e.relatedTarget;
+            if (next && card.contains(next)) return;
+            setFormulaParamHighlight(null);
+          },
+          true
+        );
+      }
 
       const REF_LIB_KEY = "model-aircraft-ref-scores-v1";
 
@@ -3124,25 +5270,128 @@
         });
       }
 
+      function syncBodyScrollLock() {
+        const refM = document.getElementById("refScoreModal");
+        const infoM = document.getElementById("pageInfoModal");
+        const locked = (refM && !refM.hidden) || (infoM && !infoM.hidden);
+        document.body.style.overflow = locked ? "hidden" : "";
+      }
+
+      function cancelRefModalTransition(modal) {
+        if (!modal || !modal._refModalCloseCleanup) return;
+        modal._refModalCloseCleanup();
+        delete modal._refModalCloseCleanup;
+      }
+
+      function animateModalOpen(modal) {
+        if (!modal) return;
+        cancelRefModalTransition(modal);
+        delete modal.dataset.modalClosing;
+        modal.hidden = false;
+        modal.classList.remove("ref-modal--open");
+        syncBodyScrollLock();
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            modal.classList.add("ref-modal--open");
+          });
+        });
+      }
+
+      function animateModalClose(modal, onComplete) {
+        if (!modal || modal.hidden) {
+          if (onComplete) onComplete();
+          return;
+        }
+        if (modal.dataset.modalClosing === "1") return;
+        const panel = modal.querySelector(".ref-modal__panel");
+        const prefersReduced =
+          typeof window.matchMedia === "function" &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        modal.dataset.modalClosing = "1";
+        modal.classList.remove("ref-modal--open");
+
+        const finish = () => {
+          delete modal.dataset.modalClosing;
+          modal.hidden = true;
+          modal.classList.remove("ref-modal--open");
+          syncBodyScrollLock();
+          delete modal._refModalCloseCleanup;
+          if (onComplete) onComplete();
+        };
+
+        if (prefersReduced || !panel) {
+          finish();
+          return;
+        }
+
+        let finished = false;
+        const doFinish = () => {
+          if (finished) return;
+          finished = true;
+          clearTimeout(fallbackId);
+          if (onEnd) panel.removeEventListener("transitionend", onEnd);
+          finish();
+        };
+
+        const fallbackId = setTimeout(doFinish, 420);
+
+        function onEnd(e) {
+          if (e.target !== panel) return;
+          doFinish();
+        }
+
+        panel.addEventListener("transitionend", onEnd);
+        modal._refModalCloseCleanup = () => {
+          if (finished) return;
+          clearTimeout(fallbackId);
+          panel.removeEventListener("transitionend", onEnd);
+        };
+      }
+
       function openRefModal() {
         const modal = document.getElementById("refScoreModal");
         if (!modal) return;
-        modal.hidden = false;
-        document.body.style.overflow = "hidden";
         const searchEl = document.getElementById("refSearch");
         if (searchEl) searchEl.value = "";
         refreshRefModalCurrent();
         renderRefTable();
+        animateModalOpen(modal);
       }
 
       function closeRefModal() {
         const modal = document.getElementById("refScoreModal");
         if (!modal) return;
-        modal.hidden = true;
-        document.body.style.overflow = "";
+        animateModalClose(modal);
+      }
+
+      function openPageInfoModal() {
+        const modal = document.getElementById("pageInfoModal");
+        if (!modal) return;
+        const btn = document.getElementById("btnPageInfo");
+        if (btn) btn.setAttribute("aria-expanded", "true");
+        animateModalOpen(modal);
+        const closeBtn = document.getElementById("pageInfoCloseBtn");
+        if (closeBtn) closeBtn.focus();
+      }
+
+      function closePageInfoModal() {
+        const modal = document.getElementById("pageInfoModal");
+        if (!modal) return;
+        animateModalClose(modal, () => {
+          const btn = document.getElementById("btnPageInfo");
+          if (btn) {
+            btn.setAttribute("aria-expanded", "false");
+            btn.focus();
+          }
+        });
       }
 
       document.getElementById("btnOpenRefLib").addEventListener("click", openRefModal);
+      document.getElementById("btnPageInfo").addEventListener("click", openPageInfoModal);
+      document.getElementById("pageInfoCloseBtn").addEventListener("click", closePageInfoModal);
+      document.getElementById("pageInfoCloseX").addEventListener("click", closePageInfoModal);
+      document.getElementById("pageInfoBackdrop").addEventListener("click", closePageInfoModal);
       document.getElementById("refModalCloseBtn").addEventListener("click", closeRefModal);
       document.getElementById("refModalCloseX").addEventListener("click", closeRefModal);
       document.getElementById("refModalBackdrop").addEventListener("click", closeRefModal);
@@ -3184,16 +5433,23 @@
         document.getElementById("refAddS2").value = "";
         document.getElementById("refAddRank").value = "";
         renderRefTable();
+        populateCompSelects();
         update();
       });
       document.getElementById("btnRefReset").addEventListener("click", function () {
         if (!confirm("将清空本机自定义记录并恢复为内置 2025 总决赛数据，确定？")) return;
         resetRefToDefault();
         renderRefTable();
+        populateCompSelects();
         update();
       });
       document.addEventListener("keydown", function (e) {
         if (e.key !== "Escape") return;
+        const infoM = document.getElementById("pageInfoModal");
+        if (infoM && !infoM.hidden) {
+          closePageInfoModal();
+          return;
+        }
         const modal = document.getElementById("refScoreModal");
         if (modal && !modal.hidden) closeRefModal();
       });
@@ -3256,6 +5512,21 @@
         resizeT = setTimeout(update, 120);
       });
 
+      wireFormulaParamHighlight();
+
+      loadCustomScoreLinesIntoInputs();
+      for (let ci = 1; ci <= 3; ci++) {
+        const el = document.getElementById("customScoreLine" + ci);
+        if (!el) continue;
+        el.addEventListener("input", function () {
+          saveCustomScoreLinesFromInputs();
+          update();
+        });
+        el.addEventListener("change", function () {
+          saveCustomScoreLinesFromInputs();
+        });
+      }
+
       renderSnapshotList();
       syncSlidersFromNumbers();
       applyTheme();
@@ -3273,8 +5544,11 @@
           { left: "\\(", right: "\\)", display: false },
         ],
         throwOnError: false,
+        trust: function (context) {
+          return context.command === "\\htmlClass";
+        },
       };
-      document.querySelectorAll(".header-formula").forEach(function (el) {
+      document.querySelectorAll(".side-formula-block").forEach(function (el) {
         renderMathInElement(el, opts);
       });
     })();

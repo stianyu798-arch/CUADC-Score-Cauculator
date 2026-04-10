@@ -12,6 +12,20 @@ This file tracks **feature and documentation changes** for this project.
 
 ---
 
+## 2026-04-11 — 文档与界面整理 · Docs & UI polish
+
+### 中文
+
+- **README**：同步功能说明（参数重要性换位动画、公式变量高亮、三种对照方式、底部双栏等高、KaTeX `trust` 等）。
+- **界面（既有实现，文档补记）**：「成绩库与对照」分区说明与并排表引导；「逐项差距 / 结果矩阵」命名与分工；参数重要性条形图复用 DOM 以避免换位动画被刷新打断。
+
+### English
+
+- **README**: Feature list updated (importance reorder animation, formula variable highlight, three compare modes, equal-height panels, KaTeX `trust` note).
+- **UI (already in `index.html`, noted in docs)**: Hub copy and compare-table hint; clearer naming for delta table vs matrix; importance bars keep DOM across updates for smoother reorder animation.
+
+---
+
 ## 2026-04-10 — 初始公开版本 · Initial public release
 
 ### 中文
