@@ -1,0 +1,3283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta id="metaThemeColor" name="theme-color" content="#f0f0f3" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>无人机短距起降 · 单轮成绩计算器（CUADC 2026）</title>
+  <meta
+    name="description"
+    content="依据《2026中国大学生飞行器设计创新大赛竞赛规则》无人机短距起降项目第6.1条，估算单轮成绩 S_turn。赛项俗称「微固」即本项目。"
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous" />
+  <style>
+    :root {
+      color-scheme: light;
+      --expo-black: #000000;
+      --near-black: #1c2024;
+      --slate: #60646c;
+      --mid-slate: #555860;
+      --silver: #b0b4ba;
+      --cloud-gray: #f0f0f3;
+      --pure-white: #ffffff;
+      --border-lavender: #e0e1e6;
+      --input-border: #d9d9e0;
+      --link-cobalt: #0d74ce;
+      --legal-blue: #476cff;
+      --warning-amber: #ab6400;
+      --destructive-rose: #eb8e90;
+      --dark-slate: #363a3f;
+      --whisper: rgba(0, 0, 0, 0.08) 0px 3px 6px, rgba(0, 0, 0, 0.07) 0px 2px 4px;
+      --elevated: rgba(0, 0, 0, 0.1) 0px 10px 20px, rgba(0, 0, 0, 0.05) 0px 3px 6px;
+      --radius-input: 6px;
+      --radius-card: 16px;
+      --radius-pill: 9999px;
+      /* 图表 SVG 与脚本读取；柱色分段（绿/黄/红）见 chartTierColors */
+      /* 与起飞距离标尺一致的粉彩绿 / 杏黄 / 浅粉（分数条） */
+      --chart-tier-high: #b5ead7;
+      --chart-tier-mid: #ffdac1;
+      --chart-tier-low: #ffb7b2;
+      --chart-bar-fill: #000000;
+      --chart-ref-fill: #6b7280;
+      --chart-value-text: #1c2024;
+      --chart-axis-text: #60646c;
+      --chart-surface: #ffffff;
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --expo-black: #f4f4f5;
+      --near-black: #e8eaef;
+      --slate: #9ca3b0;
+      --mid-slate: #8b929e;
+      --silver: #6b7280;
+      --cloud-gray: #12151a;
+      --pure-white: #1c2128;
+      --border-lavender: #2d3540;
+      --input-border: #3d4654;
+      --link-cobalt: #4b9fff;
+      --legal-blue: #7c9cff;
+      --warning-amber: #d4a024;
+      --destructive-rose: #f0a8aa;
+      --dark-slate: #c8ccd4;
+      --whisper: rgba(0, 0, 0, 0.45) 0px 4px 14px, rgba(0, 0, 0, 0.25) 0px 2px 4px;
+      --elevated: rgba(0, 0, 0, 0.55) 0px 14px 32px;
+      --chart-tier-high: #b5ead7;
+      --chart-tier-mid: #ffdac1;
+      --chart-tier-low: #ffb7b2;
+      --chart-bar-fill: #e8eaef;
+      --chart-ref-fill: #8b939e;
+      --chart-value-text: #f0f2f5;
+      --chart-axis-text: #9ca3b0;
+      --chart-surface: #1c2128;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Noto Sans SC", -apple-system, system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.4;
+      color: var(--near-black);
+      background: var(--cloud-gray);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-top: 40px;
+      padding-bottom: max(96px, env(safe-area-inset-bottom));
+      padding-left: max(24px, env(safe-area-inset-left));
+      padding-right: max(24px, env(safe-area-inset-right));
+    }
+
+    header {
+      margin-bottom: 48px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--border-lavender);
+      text-align: center;
+    }
+
+    /* 与公式同宽收缩：以较宽者为准，文字自动换行对齐块宽 */
+    header .header-doc {
+      display: inline-block;
+      width: -moz-fit-content;
+      width: fit-content;
+      max-width: 100%;
+      min-width: 0;
+      margin: 0 auto;
+      vertical-align: top;
+      text-align: left;
+      box-sizing: border-box;
+    }
+
+    header h1 {
+      font-family: Inter, "Noto Sans SC", sans-serif;
+      font-weight: 700;
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.1;
+      letter-spacing: -0.06em;
+      margin: 0 0 16px;
+      color: var(--expo-black);
+      text-align: center;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--slate);
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 1.4;
+      max-width: 42em;
+    }
+
+    header .header-doc p {
+      max-width: none;
+    }
+
+    header .header-intro {
+      margin: 0 0 24px;
+    }
+
+    header .header-intro p {
+      margin: 0 0 14px;
+      color: var(--slate);
+      font-size: clamp(15px, 0.35vw + 14px, 17px);
+      font-weight: 400;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+      word-wrap: break-word;
+    }
+
+    header .header-intro p:last-child {
+      margin-bottom: 0;
+    }
+
+    header .header-note {
+      margin: 22px 0 0;
+      padding-top: 22px;
+      border-top: 1px solid var(--border-lavender);
+      letter-spacing: -0.035em;
+    }
+
+    header .header-note p {
+      margin: 0 0 12px;
+      color: var(--mid-slate);
+      font-size: clamp(13px, 0.25vw + 12.5px, 14px);
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+      word-wrap: break-word;
+    }
+
+    header .header-note p:last-child {
+      margin-bottom: 0;
+    }
+
+    header .header-note .header-note-lead {
+      margin-bottom: 14px;
+      color: var(--slate);
+      font-size: 14px;
+    }
+
+    header .header-note strong {
+      color: var(--near-black);
+      font-weight: 600;
+    }
+
+    header .header-formula {
+      margin: 0 0 20px;
+      color: var(--slate);
+      font-size: clamp(12px, 1.4vw + 10px, 16px);
+      box-sizing: border-box;
+    }
+
+    header .header-formula .katex {
+      color: inherit;
+    }
+
+    /* 窄屏：竖排公式，与正文同宽 */
+    header .header-formula--stack {
+      display: block;
+      max-width: 100%;
+    }
+
+    header .header-formula--stack .katex-display {
+      margin: 0 auto;
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    /* 宽屏：横排；极窄桌面仍可能略宽，允许横向滚动 */
+    header .header-formula--row {
+      display: none;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+    }
+
+    header .header-formula--row .katex-display {
+      margin: 0;
+      width: max-content;
+      max-width: none;
+    }
+
+    @media (min-width: 992px) {
+      header .header-formula--stack {
+        display: none !important;
+      }
+
+      header .header-formula--row {
+        display: block !important;
+      }
+    }
+
+    .grid {
+      display: grid;
+      gap: 24px;
+    }
+
+    @media (min-width: 900px) {
+      .grid-main {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+      }
+
+      /* 左：参数；右：可视化顶对齐、得分底对齐，列高等高 */
+      .workspace-main {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        align-items: stretch;
+      }
+
+      .workspace-left {
+        height: 100%;
+        align-self: stretch;
+      }
+
+      .workspace-left > .card {
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+
+      .workspace-right {
+        height: 100%;
+        align-self: stretch;
+      }
+
+      .workspace-right .workspace-viz {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: visible;
+      }
+
+      .workspace-right .workspace-viz .section-head {
+        flex-shrink: 0;
+      }
+
+      /* 勿用 min-height:0 压扁网格，否则起飞标尺会画出卡片叠到「计算结果」上 */
+      .workspace-right .workspace-viz .viz-grid {
+        flex: 1 1 auto;
+        min-height: min-content;
+        align-content: start;
+        overflow: visible;
+      }
+
+      /* 与左侧 .card 外框顶/侧内边距一致，顶边对齐 */
+      .workspace-right .section-viz.workspace-viz {
+        margin-top: 0;
+        padding: 28px 32px 40px;
+        border-radius: var(--radius-card);
+        overflow: visible;
+      }
+
+      .workspace-right .section-viz .section-head {
+        margin-bottom: 20px;
+      }
+    }
+
+    .workspace-main {
+      gap: 24px;
+    }
+
+    .workspace-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .workspace-right {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .workspace-viz {
+      margin-top: 0;
+      min-width: 0;
+    }
+
+    .workspace-viz .viz-grid {
+      grid-template-columns: 1fr;
+    }
+
+    /* 宽表格横向滚动，避免撑破小屏 */
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 12px 0 0;
+      border-radius: 8px;
+    }
+
+    .field-diffsnap {
+      max-width: 440px;
+    }
+
+    .table-scroll .compare-table {
+      min-width: 320px;
+    }
+
+    #versionDiffTable.compare-table {
+      min-width: 480px;
+    }
+
+    #compareTable.compare-table {
+      min-width: 360px;
+    }
+
+    .card {
+      background: var(--pure-white);
+      border: 1px solid var(--border-lavender);
+      border-radius: var(--radius-card);
+      padding: 28px 32px;
+      box-shadow: var(--whisper);
+    }
+
+    .card h2 {
+      font-family: Inter, "Noto Sans SC", sans-serif;
+      font-weight: 600;
+      font-size: 20px;
+      line-height: 1.2;
+      letter-spacing: -0.025em;
+      margin: 0 0 20px;
+      color: var(--near-black);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .card h2 .tag {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--mid-slate);
+      background: rgba(96, 100, 108, 0.08);
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-lavender);
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate);
+      margin-bottom: 6px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    input[type="number"],
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: var(--radius-input);
+      border: 1px solid var(--input-border);
+      background: var(--pure-white);
+      color: var(--near-black);
+      font-size: 16px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--link-cobalt);
+      box-shadow: 0 0 0 3px rgba(13, 116, 206, 0.2);
+    }
+
+    /* 参数滑动条：与数字框联动 */
+    .param-slider {
+      width: 100%;
+      margin: 6px 0 10px;
+      height: 28px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .param-slider:focus {
+      outline: none;
+    }
+
+    .param-slider:focus-visible::-webkit-slider-thumb {
+      box-shadow: 0 0 0 3px rgba(13, 116, 206, 0.35);
+    }
+
+    .param-slider::-webkit-slider-runnable-track {
+      height: 6px;
+      background: var(--border-lavender);
+      border-radius: 999px;
+    }
+
+    .param-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      margin-top: -8px;
+      border-radius: 50%;
+      background: var(--expo-black);
+      border: 2px solid var(--pure-white);
+      box-shadow: var(--whisper);
+    }
+
+    .param-slider::-moz-range-track {
+      height: 6px;
+      background: var(--border-lavender);
+      border-radius: 999px;
+      border: none;
+    }
+
+    .param-slider::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--expo-black);
+      border: 2px solid var(--pure-white);
+      box-shadow: var(--whisper);
+      cursor: pointer;
+    }
+
+    .slider-hint {
+      font-size: 12px;
+      color: var(--silver);
+      margin-top: 4px;
+    }
+
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .results {
+      display: grid;
+      gap: 16px;
+    }
+
+    .results.results-split {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width: 639px) {
+      .results.results-split {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .workspace-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      min-width: 0;
+    }
+
+    .result-block {
+      background: var(--cloud-gray);
+      border-radius: 12px;
+      padding: 18px 20px;
+      border: 1px solid var(--border-lavender);
+    }
+
+    .result-block.highlight {
+      background: var(--pure-white);
+      border-color: var(--dark-slate);
+      box-shadow: var(--whisper);
+    }
+
+    .result-block .label {
+      font-size: 14px;
+      color: var(--slate);
+      margin-bottom: 6px;
+    }
+
+    .result-block .value {
+      font-family: Inter, "Noto Sans SC", sans-serif;
+      font-weight: 700;
+      font-size: 2rem;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+      color: var(--expo-black);
+    }
+
+    .result-block .sub {
+      font-size: 14px;
+      color: var(--slate);
+      margin-top: 8px;
+    }
+
+    .warn {
+      color: var(--warning-amber);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .result-block.highlight.result-block--score-zero {
+      border-color: rgba(171, 100, 0, 0.55);
+      background: linear-gradient(
+        160deg,
+        rgba(171, 100, 0, 0.1) 0%,
+        rgba(255, 255, 255, 0.96) 42%,
+        var(--pure-white) 100%
+      );
+      box-shadow:
+        0 0 0 1px rgba(171, 100, 0, 0.2),
+        0 4px 14px rgba(171, 100, 0, 0.12),
+        var(--whisper);
+    }
+
+    .result-block--score-zero .value {
+      color: #8a4b00;
+    }
+
+    .score-zero-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 0 0 14px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(171, 100, 0, 0.35);
+      background: rgba(171, 100, 0, 0.12);
+      font-size: 13px;
+      line-height: 1.45;
+      color: #5c3d12;
+    }
+
+    .score-zero-banner[hidden] {
+      display: none !important;
+    }
+
+    /* 显示时：入场 + 持续呼吸高光 */
+    .score-zero-banner:not([hidden]) {
+      animation: scoreZeroBannerEnter 0.48s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+        scoreZeroBannerPulse 2.2s ease-in-out 0.5s infinite;
+    }
+
+    @keyframes scoreZeroBannerEnter {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes scoreZeroBannerPulse {
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(171, 100, 0, 0.18);
+      }
+      50% {
+        box-shadow: 0 0 0 5px rgba(171, 100, 0, 0.1);
+      }
+    }
+
+    .score-zero-banner__mark {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(171, 100, 0, 0.95);
+      color: var(--pure-white);
+      font-weight: 700;
+      font-size: 13px;
+      line-height: 22px;
+      text-align: center;
+      font-family: Inter, system-ui, sans-serif;
+    }
+
+    .score-zero-banner:not([hidden]) .score-zero-banner__mark {
+      animation: scoreZeroMarkPulse 1.6s ease-in-out 0.4s infinite;
+    }
+
+    @keyframes scoreZeroMarkPulse {
+      0%,
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(171, 100, 0, 0.45);
+      }
+      50% {
+        transform: scale(1.08);
+        box-shadow: 0 0 0 6px rgba(171, 100, 0, 0.15);
+      }
+    }
+
+    .snapshot-save-error {
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(235, 142, 144, 0.65);
+      background: rgba(235, 142, 144, 0.12);
+      font-size: 14px;
+      line-height: 1.45;
+      color: #9a2a2e;
+    }
+
+    .snapshot-save-error[hidden] {
+      display: none !important;
+    }
+
+    .field-snapname input.snapshot-name-invalid {
+      border-color: rgba(235, 142, 144, 0.9);
+      box-shadow: 0 0 0 2px rgba(235, 142, 144, 0.2);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: background 0.15s, box-shadow 0.15s, border-color 0.15s;
+    }
+
+    button.secondary {
+      background: var(--pure-white);
+      color: var(--near-black);
+      border: 1px solid var(--input-border);
+      box-shadow: var(--whisper);
+    }
+
+    button.secondary:hover:not(:disabled) {
+      box-shadow: var(--elevated);
+    }
+
+    button.primary {
+      background: var(--expo-black);
+      color: var(--pure-white);
+      border: none;
+      box-shadow: var(--whisper);
+    }
+
+    button.primary:hover:not(:disabled) {
+      opacity: 0.92;
+    }
+
+    button.ghost {
+      background: transparent;
+      color: var(--near-black);
+      border: 1px solid var(--input-border);
+      box-shadow: none;
+    }
+
+    button.ghost:hover:not(:disabled) {
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .snapshot-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .snapshot-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      font-size: 14px;
+    }
+
+    .snapshot-list li:hover {
+      background: var(--cloud-gray);
+      border-color: var(--border-lavender);
+    }
+
+    .snapshot-list .meta {
+      color: var(--silver);
+      font-size: 12px;
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    .compare-table th,
+    .compare-table td {
+      padding: 10px 12px;
+      text-align: right;
+      border-bottom: 1px solid var(--border-lavender);
+    }
+
+    .compare-table th:first-child,
+    .compare-table td:first-child {
+      text-align: left;
+    }
+
+    .compare-table th {
+      color: var(--slate);
+      font-weight: 600;
+    }
+
+    .compare-table tr.diff-score-start td {
+      border-top: 1px solid var(--border-lavender);
+      padding-top: 10px;
+    }
+
+    .diff-pos {
+      color: var(--expo-black);
+    }
+
+    .diff-neg {
+      color: var(--mid-slate);
+    }
+
+    .formula-note {
+      font-size: 14px;
+      color: var(--slate);
+      margin-top: 20px;
+      line-height: 1.4;
+    }
+
+    /* Expo: light gallery section — white island on cloud gray */
+    .section-viz {
+      margin-top: 64px;
+      padding: 48px 32px 56px;
+      background: var(--pure-white);
+      border: 1px solid var(--border-lavender);
+      border-radius: 24px;
+      box-shadow: var(--whisper);
+    }
+
+    .section-viz .section-head {
+      margin-bottom: 20px;
+    }
+
+    /* 与参数卡片 .card h2 一致 */
+    .workspace-viz .section-head h2 {
+      font-family: Inter, "Noto Sans SC", sans-serif;
+      font-weight: 600;
+      font-size: 20px;
+      line-height: 1.2;
+      letter-spacing: -0.025em;
+      margin: 0 0 12px;
+      color: var(--near-black);
+    }
+
+    /* 与页眉说明段、.formula-note 层级一致 */
+    .workspace-viz .section-head .lead {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--slate);
+      max-width: 44em;
+    }
+
+    @media (max-width: 899px) {
+      .workspace-viz .section-head h2 {
+        font-size: 18px;
+      }
+
+      .workspace-viz .section-head .lead {
+        font-size: 13px;
+        line-height: 1.5;
+      }
+    }
+
+    .viz-grid {
+      display: grid;
+      gap: 24px;
+    }
+
+    .workspace-viz .viz-grid {
+      gap: 20px;
+    }
+
+    @media (min-width: 900px) {
+      .viz-grid {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+      }
+    }
+
+    .card-viz-inner {
+      background: var(--cloud-gray);
+      border: 1px solid var(--border-lavender);
+      border-radius: 16px;
+      padding: 22px 24px;
+    }
+
+    .workspace-viz .card-viz-inner {
+      padding: 20px 22px;
+    }
+
+    .workspace-viz .card-viz-inner h3 {
+      font-family: Inter, "Noto Sans SC", sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      margin: 0 0 12px;
+      color: var(--near-black);
+    }
+
+    .chart-host {
+      width: 100%;
+      min-height: 200px;
+    }
+
+    .chart-host svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    /* 分数柱：随数值变化时平滑伸缩（由 JS 更新 scaleY，避免整图重绘触发动画抖动） */
+    .chart-host svg .bar-fill.bar-fill--smooth {
+      transform-box: fill-box;
+      transform-origin: bottom center;
+      transition: transform 0.2s cubic-bezier(0.25, 0.82, 0.32, 1);
+    }
+
+    .chart-host svg .chart-y-label,
+    .chart-host svg .bar-value,
+    .chart-host svg .bar-label {
+      opacity: 1;
+    }
+
+    /* 奖级参考横线与区间浅色底：不拦截指针 */
+    .chart-host svg .chart-tier-bands rect,
+    .chart-host svg .chart-tier-hlines line,
+    .chart-host svg .chart-tier-hlines text {
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .chart-host svg .bar-fill.bar-fill--smooth {
+        transition: none;
+      }
+
+      .score-zero-banner:not([hidden]),
+      .score-zero-banner:not([hidden]) .score-zero-banner__mark {
+        animation: none;
+      }
+    }
+
+    .ribbon-block {
+      margin-bottom: 20px;
+      flex: 0 0 auto;
+    }
+
+    .ribbon-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .workspace-viz .ribbon-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate);
+      margin-bottom: 6px;
+    }
+
+    .card-viz-takeoff {
+      min-height: min-content;
+    }
+
+    .ribbon-host {
+      width: 100%;
+      height: 88px;
+      min-height: 88px;
+      max-height: 88px;
+      overflow: hidden;
+      line-height: 0;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+
+    .ribbon-host svg {
+      display: block;
+      width: 100%;
+      height: 88px;
+      max-height: 88px;
+      box-sizing: border-box;
+    }
+
+    .deploy-hint {
+      margin-top: 48px;
+      padding: 20px 24px;
+      background: var(--pure-white);
+      border: 1px solid var(--border-lavender);
+      border-radius: var(--radius-card);
+      font-size: 15px;
+      color: var(--slate);
+      box-shadow: var(--whisper);
+    }
+
+    .deploy-hint strong {
+      color: var(--near-black);
+      font-weight: 600;
+    }
+
+    .deploy-hint a {
+      color: var(--link-cobalt);
+      text-decoration: none;
+    }
+
+    .deploy-hint a:hover {
+      text-decoration: underline;
+    }
+
+    .deploy-hint code {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 14px;
+      background: var(--cloud-gray);
+      padding: 4px 10px;
+      border-radius: var(--radius-input);
+      border: 1px solid var(--border-lavender);
+      color: var(--near-black);
+    }
+
+    footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-lavender);
+      font-size: 14px;
+      color: var(--silver);
+    }
+
+    select {
+      width: 100%;
+      max-width: 420px;
+      padding: 10px 12px;
+      border-radius: var(--radius-input);
+      border: 1px solid var(--input-border);
+      background: var(--pure-white);
+      color: var(--near-black);
+      font-size: 16px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--link-cobalt);
+      box-shadow: 0 0 0 3px rgba(13, 116, 206, 0.2);
+    }
+
+    .delta-pos {
+      color: var(--expo-black);
+      font-weight: 600;
+    }
+
+    .delta-neg {
+      color: var(--mid-slate);
+      font-weight: 600;
+    }
+
+    #versionDiffTable tr.diff-score-start td {
+      border-top: 1px solid var(--border-lavender);
+      padding-top: 12px;
+    }
+
+    #versionDiffTable tr.diff-stotal td {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    /* —— 移动端与小平板 —— */
+    @media (max-width: 899px) {
+      .wrap {
+        padding-top: 28px;
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+      }
+
+      header {
+        margin-bottom: 32px;
+        padding-bottom: 28px;
+      }
+
+      header p {
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      header .header-intro {
+        margin-bottom: 18px;
+      }
+
+      header .header-intro p {
+        font-size: 15px;
+        margin-bottom: 12px;
+      }
+
+      header .header-note {
+        padding-top: 16px;
+        margin-top: 16px;
+      }
+
+      header .header-note p,
+      header .header-note .header-note-lead {
+        font-size: 13px;
+      }
+
+      header .header-formula {
+        font-size: clamp(12px, 3.1vw, 15px);
+      }
+
+      .card {
+        padding: 22px 18px;
+        border-radius: 14px;
+      }
+
+      .section-viz {
+        margin-top: 40px;
+        padding: 28px 18px 32px;
+        border-radius: 18px;
+      }
+
+      .workspace-main .section-viz.workspace-viz {
+        margin-top: 0;
+      }
+
+      .workspace-viz .section-head .lead {
+        font-size: 13px;
+      }
+
+      .workspace-viz .card-viz-inner {
+        padding: 18px 16px;
+      }
+
+      .deploy-hint {
+        margin-top: 32px;
+        padding: 16px 18px;
+        font-size: 14px;
+      }
+
+      footer {
+        margin-top: 36px;
+      }
+    }
+
+    @media (max-width: 639px) {
+      .wrap {
+        padding-top: 16px;
+        padding-bottom: max(64px, env(safe-area-inset-bottom));
+      }
+
+      header h1 {
+        font-size: clamp(1.5rem, 7vw, 1.85rem);
+        letter-spacing: -0.04em;
+      }
+
+      header p {
+        font-size: 15px;
+      }
+
+      .card h2 {
+        font-size: 18px;
+        gap: 8px;
+      }
+
+      .row2 {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      .result-block .value {
+        font-size: 1.65rem;
+      }
+
+      .btn-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn-row button {
+        width: 100%;
+        min-height: 44px;
+      }
+
+      button {
+        min-height: 44px;
+        padding: 12px 18px;
+      }
+
+      .snapshot-list li {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+
+      .snapshot-list li > div:last-child {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-start;
+      }
+
+      .snapshot-list li > div:last-child button {
+        flex: 1 1 auto;
+        min-width: calc(33.33% - 8px);
+        min-height: 44px;
+      }
+
+      .compare-table {
+        font-size: 12px;
+      }
+
+      .compare-table th,
+      .compare-table td {
+        padding: 8px 8px;
+      }
+
+      .table-scroll {
+        margin-left: -4px;
+        margin-right: -4px;
+        padding: 0 4px;
+      }
+
+      select {
+        max-width: 100%;
+      }
+
+      .workspace-viz .section-head h2 {
+        font-size: 18px;
+      }
+
+      .field-diffsnap {
+        max-width: 100%;
+      }
+
+      .param-slider::-webkit-slider-thumb {
+        width: 26px;
+        height: 26px;
+        margin-top: -10px;
+      }
+
+      .param-slider::-moz-range-thumb {
+        width: 26px;
+        height: 26px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .snapshot-list li > div:last-child button {
+        min-width: 100%;
+      }
+    }
+
+    /* —— 分数参考库 —— */
+    .ref-teaser {
+      margin-bottom: 24px;
+    }
+
+    .ref-teaser__inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .ref-teaser h2 {
+      margin: 0 0 6px;
+    }
+
+    .ref-teaser__note {
+      margin: 0;
+      max-width: 42em;
+    }
+
+    .ref-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 28px
+        max(16px, env(safe-area-inset-left));
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .ref-modal[hidden] {
+      display: none !important;
+    }
+
+    .ref-modal__backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: rgba(28, 32, 36, 0.48);
+      backdrop-filter: blur(3px);
+    }
+
+    .ref-modal__panel {
+      position: relative;
+      z-index: 1;
+      pointer-events: auto;
+      width: 100%;
+      max-width: 960px;
+      margin: auto 0;
+      display: flex;
+      flex-direction: column;
+      max-height: min(94vh, 920px);
+    }
+
+    .ref-modal__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .ref-modal__head h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      color: var(--near-black);
+    }
+
+    .ref-modal__close {
+      flex-shrink: 0;
+      font-size: 22px;
+      line-height: 1;
+      padding: 2px 10px;
+      min-width: 44px;
+      min-height: 44px;
+    }
+
+    .ref-modal__current {
+      margin: 0 0 12px;
+      font-size: 14px;
+    }
+
+    .ref-modal__current strong {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ref-modal__scroll {
+      flex: 1 1 auto;
+      min-height: 200px;
+      max-height: min(46vh, 400px);
+      margin: 8px 0 0;
+      border-radius: 10px;
+      border: 1px solid var(--border-lavender);
+      background: var(--pure-white);
+    }
+
+    .ref-table {
+      margin-top: 0;
+      font-size: 13px;
+    }
+
+    .ref-table th,
+    .ref-table td {
+      padding: 8px 10px;
+      vertical-align: top;
+    }
+
+    .ref-table td:nth-child(2) {
+      white-space: normal;
+      min-width: 120px;
+      max-width: min(280px, 36vw);
+      word-break: break-word;
+    }
+
+    .ref-table .ref-num {
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    .ref-table .ref-delta-pos {
+      color: var(--expo-black);
+      font-weight: 600;
+    }
+
+    .ref-table .ref-delta-neg {
+      color: var(--mid-slate);
+      font-weight: 600;
+    }
+
+    .ref-modal__add {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-lavender);
+    }
+
+    .ref-modal__add .formula-note {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    .ref-add-school {
+      margin-bottom: 12px;
+    }
+
+    .ref-add-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px 16px;
+    }
+
+    @media (max-width: 720px) {
+      .ref-add-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .ref-modal__panel {
+        padding: 20px 18px 22px;
+      }
+
+      .ref-table {
+        font-size: 12px;
+      }
+
+      .ref-table th,
+      .ref-table td {
+        padding: 6px 8px;
+      }
+    }
+
+    .ref-modal__foot {
+      margin-top: 16px;
+      margin-bottom: 0;
+    }
+
+    .header-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .theme-toggle-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .theme-toggle-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--slate);
+      letter-spacing: 0.02em;
+    }
+
+    .theme-toggle {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      width: 100%;
+      max-width: 304px;
+      padding: 4px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-lavender);
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"] .theme-toggle {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .theme-toggle__thumb {
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: 4px;
+      width: calc((100% - 8px) / 3);
+      border-radius: var(--radius-pill);
+      background: var(--pure-white);
+      box-shadow: var(--whisper);
+      transition: transform 0.3s cubic-bezier(0.25, 0.82, 0.32, 1);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .theme-toggle[data-pref="light"] .theme-toggle__thumb {
+      transform: translateX(0);
+    }
+
+    .theme-toggle[data-pref="dark"] .theme-toggle__thumb {
+      transform: translateX(100%);
+    }
+
+    .theme-toggle[data-pref="system"] .theme-toggle__thumb {
+      transform: translateX(200%);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .theme-toggle__thumb {
+        transition: none;
+      }
+    }
+
+    .theme-toggle__btn {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      padding: 8px 4px;
+      border: none;
+      border-radius: var(--radius-pill);
+      background: transparent;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--mid-slate);
+      cursor: pointer;
+      line-height: 1.2;
+    }
+
+    @media (min-width: 420px) {
+      .theme-toggle__btn {
+        font-size: 13px;
+        padding: 9px 8px;
+      }
+    }
+
+    .theme-toggle__btn:hover {
+      color: var(--near-black);
+    }
+
+    .theme-toggle__btn[aria-pressed="true"] {
+      color: var(--expo-black);
+      font-weight: 600;
+    }
+
+    .compare-table td.compare-table__hint {
+      text-align: left;
+      color: var(--slate);
+      font-size: 12px;
+      padding-top: 10px;
+      border: none;
+    }
+  </style>
+  <script>
+    (function () {
+      try {
+        var k = "model-aircraft-theme-pref-v1";
+        var p = localStorage.getItem(k) || "system";
+        var dark =
+          p === "dark" || (p === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme-pref", p);
+        var meta = document.getElementById("metaThemeColor");
+        if (meta) meta.setAttribute("content", dark ? "#12151a" : "#f0f0f3");
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="header-toolbar">
+        <div class="theme-toggle-wrap">
+          <span class="theme-toggle-label" id="themeToggleLabel">界面主题</span>
+          <div
+            id="themeToggle"
+            class="theme-toggle"
+            data-pref="system"
+            role="group"
+            aria-labelledby="themeToggleLabel"
+          >
+            <span class="theme-toggle__thumb" aria-hidden="true"></span>
+            <button type="button" class="theme-toggle__btn" data-pref="light" aria-pressed="false">
+              浅色
+            </button>
+            <button type="button" class="theme-toggle__btn" data-pref="dark" aria-pressed="false">
+              深色
+            </button>
+            <button type="button" class="theme-toggle__btn" data-pref="system" aria-pressed="true">
+              系统
+            </button>
+          </div>
+        </div>
+      </div>
+      <h1>无人机短距起降 · 单轮成绩计算器</h1>
+      <div class="header-doc">
+      <div class="header-intro">
+        <p>
+          依据《<strong>2026 中国大学生飞行器设计创新大赛竞赛规则</strong>》竞赛细则「<strong>无人机短距起降</strong>」第 6.1 条，估算<strong>单轮</strong>得分 <span style="white-space: nowrap">S<sub>turn</sub></span>。赛项口语中的「<strong>微固</strong>」即本项目（微型固定翼、短距起降与有效载荷计分）。
+        </p>
+        <p>
+          在下方填入规则中的<strong>有效载荷</strong> <span style="white-space: nowrap">W<sub>payload</sub></span>、<strong>空机质量</strong> <span style="white-space: nowrap">W<sub>empty</sub></span>、<strong>最大翼展</strong> <span style="white-space: nowrap">b</span> 与<strong>起飞距离</strong> <span style="white-space: nowrap">d</span>（与起飞区桌面设置及现场测定一致，参见规则 3.2）；右侧图表随参数更新。
+        </p>
+        <p>
+          可<strong>保存快照</strong>记录方案迭代，选<strong>基准快照</strong>查看与某一版的差值。数据仅保存在本机浏览器，换设备或清除站点数据会丢失。
+        </p>
+      </div>
+      <div class="header-formula header-formula--stack" aria-label="单轮成绩计算公式（窄屏换行）">
+        \[
+        \begin{aligned}
+        S_{\mathrm{turn}} &= 3 \cdot \frac{W_{\mathrm{payload}}}{453} \cdot M \cdot B + Z \\[0.4em]
+        M &= \frac{11}{\left(\frac{W_{\mathrm{empty}}}{453} - 1\right)^4 + 8.9} \\[0.4em]
+        B &= \begin{cases} 20, & d \le 1.2 \\ 15, & 1.2 \lt d \le 2.4 \\ 0, & d \gt 2.4 \end{cases} \\[0.4em]
+        Z &= B - \left(\frac{b}{305}\right)^{1.5}
+        \end{aligned}
+        \]
+      </div>
+      <div class="header-formula header-formula--row" aria-label="单轮成绩计算公式（宽屏横排）">
+        \[
+        \begin{aligned}
+        S_{\mathrm{turn}} &= 3 \cdot \frac{W_{\mathrm{payload}}}{453} \cdot M \cdot B + Z \quad
+        & M &= \frac{11}{\left(\frac{W_{\mathrm{empty}}}{453} - 1\right)^4 + 8.9} \quad
+        & B &= \begin{cases} 20, & d \le 1.2 \\ 15, & 1.2 \lt d \le 2.4 \\ 0, & d \gt 2.4 \end{cases} \quad
+        & Z &= B - \left(\frac{b}{305}\right)^{1.5}
+        \end{aligned}
+        \]
+      </div>
+      <div class="header-note">
+        <p class="header-note-lead"><strong>式子怎么读</strong></p>
+        <p>
+          <strong>M</strong> 由空机质量 <span style="white-space: nowrap">W<sub>empty</sub></span> 决定；<strong>B</strong> 由起飞距离 <span style="white-space: nowrap">d（m）</span> 分段取值（规则 6.1 已列出 ≤1.2 与 1.2～2.4 m 两档）。
+        </p>
+        <p>
+          <strong>Z</strong> = <span style="white-space: nowrap">B − (b/305)<sup>1.5</sup></span>，<span style="white-space: nowrap">b（mm）</span> 为最大翼展；与 <span style="white-space: nowrap">3×(W<sub>payload</sub>/453)×M×B</span> 相加得 <span style="white-space: nowrap">S<sub>turn</sub></span>。总成绩取两轮较高者（规则 6.2），本页仅算单轮。
+        </p>
+      </div>
+      </div>
+    </header>
+
+    <div class="card ref-teaser">
+      <div class="ref-teaser__inner">
+        <div>
+          <h2>分数参考 <span class="tag">成绩库</span></h2>
+          <p class="formula-note ref-teaser__note">
+            内置 <strong>2025 总决赛</strong>团体名次与双机组成绩（可作单轮对照）；库数据保存在本机浏览器，可检索、自增记录或恢复默认。
+          </p>
+        </div>
+        <button type="button" class="primary" id="btnOpenRefLib" aria-haspopup="dialog" aria-controls="refScoreModal">
+          打开成绩库
+        </button>
+      </div>
+    </div>
+
+    <div class="workspace-stack">
+    <div class="grid workspace-main">
+      <div class="workspace-left">
+        <div class="card">
+        <h2>参数输入 <span class="tag">无人机短距起降</span></h2>
+        <div class="field">
+          <label for="wp">有效载荷 W<sub>payload</sub>（g，取整）</label>
+          <input
+            type="range"
+            id="wpSl"
+            class="param-slider"
+            min="0"
+            max="2000"
+            step="1"
+            value="200"
+            aria-label="有效载荷滑动条"
+          />
+          <input type="number" id="wp" step="1" min="0" max="2000" value="200" />
+          <div class="slider-hint">0–2000 g，也可直接输入数字</div>
+        </div>
+        <div class="field">
+          <label for="we">空机质量 W<sub>empty</sub>（g，取整）</label>
+          <input
+            type="range"
+            id="weSl"
+            class="param-slider"
+            min="0"
+            max="2000"
+            step="1"
+            value="400"
+            aria-label="空机质量滑动条"
+          />
+          <input type="number" id="we" step="1" min="0" max="2000" value="400" />
+          <div class="slider-hint">0–2000 g</div>
+        </div>
+        <div class="field">
+          <label for="b">最大翼展 b（mm，取整）</label>
+          <input
+            type="range"
+            id="bSl"
+            class="param-slider"
+            min="0"
+            max="4000"
+            step="1"
+            value="1200"
+            aria-label="翼展滑动条"
+          />
+          <input type="number" id="b" step="1" min="0" max="4000" value="1200" />
+          <div class="slider-hint">0–4000 mm</div>
+        </div>
+        <div class="field">
+          <label for="takeoff">起飞距离（m）</label>
+          <input
+            type="range"
+            id="takeoffSl"
+            class="param-slider"
+            min="0"
+            max="3"
+            step="0.01"
+            value="1.5"
+            aria-label="起飞距离滑动条"
+          />
+          <input type="number" id="takeoff" step="0.01" min="0" max="3" value="1.5" />
+          <div class="slider-hint">0–3 m（步进 0.01）</div>
+        </div>
+
+        <div class="field field-snapname">
+          <label for="snapName">版本名称</label>
+          <input
+            type="text"
+            id="snapName"
+            name="snapName"
+            maxlength="120"
+            placeholder="保存快照时必填，例如：轻载方案 v3"
+            autocomplete="off"
+            aria-describedby="snapshotSaveError"
+          />
+        </div>
+        <p class="snapshot-save-error" id="snapshotSaveError" role="alert" hidden></p>
+
+        <div class="btn-row">
+          <button type="button" class="primary" id="btnSnapshot">保存为版本快照</button>
+        </div>
+        </div>
+      </div>
+
+      <div class="workspace-right">
+      <section class="section-viz workspace-viz" aria-label="数据可视化">
+      <div class="section-head">
+        <h2>数据可视化</h2>
+        <p class="lead">
+          柱状图共四根：<strong>当前试算</strong>与成绩库中<strong>一等奖 / 二等奖 / 三等奖</strong>各自「较高机组分」的<strong>组内最高分</strong>参考柱；背景中有<strong>三条横向参考线</strong>与（在有一、三等数据且一等不低于三等时）<strong>三色水平分区</strong>，对应试算柱的绿 / 黄 / 红档位。下栏为起飞距离与 <strong>B</strong> 分段标尺。
+        </p>
+      </div>
+      <div class="viz-grid">
+        <div class="card-viz-inner">
+          <h3>单轮成绩</h3>
+          <div class="chart-host" id="barChart" role="img" aria-label="当前试算与一、二、三等奖参考柱状图"></div>
+        </div>
+        <div class="card-viz-inner card-viz-takeoff">
+          <h3>起飞距离与 B 分段</h3>
+          <div class="ribbon-block">
+            <div class="ribbon-label">距 <span id="takeoffReadout">—</span> m</div>
+            <div class="ribbon-host" id="takeoffViz"></div>
+          </div>
+        </div>
+      </div>
+      </section>
+      </div>
+    </div>
+
+      <div class="card card-results">
+        <h2>计算结果</h2>
+        <div class="results results-split" id="results">
+          <div class="result-block highlight" id="scorePrimaryBlock" role="status" aria-live="polite">
+            <div class="score-zero-banner" id="scoreZeroBanner" hidden>
+              <span class="score-zero-banner__mark" aria-hidden="true">!</span>
+              <span>单轮成绩为 <strong>0</strong>：请核对规则 6.1 中起飞距离对应的 <strong>B</strong>、翼展 <strong>b</strong> 与有效载荷等；<span style="white-space: nowrap">S<sub>turn</sub></span> 最小为 0。</span>
+            </div>
+            <div class="label">单轮成绩 S<sub>turn</sub></div>
+            <div class="value" id="outS">—</div>
+            <div class="warn" id="warn1" hidden></div>
+          </div>
+          <div class="result-block">
+            <div class="label">分项系数（B、M、Z）</div>
+            <div class="sub" id="detail1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 24px">
+      <h2>版本差距 <span class="tag">相对快照</span></h2>
+      <p class="formula-note" style="margin-top: 0">
+        选定一条已保存的快照作为<strong>基准版本</strong>，表格展示<strong>当前值、基准值与差值 Δ</strong>（当前 − 基准）。便于在迭代调参时一眼看到参数与分数变化方向。
+      </p>
+      <div class="field field-diffsnap">
+        <label for="diffSnapSelect">基准快照</label>
+        <select id="diffSnapSelect" aria-label="选择用于对比的版本快照">
+          <option value="">— 请选择快照 —</option>
+        </select>
+      </div>
+      <p class="formula-note" id="versionDiffEmpty" hidden>暂无快照：先在「参数输入」中点击「保存为版本快照」。</p>
+      <div class="table-scroll" id="versionDiffTableWrap" hidden>
+        <table class="compare-table" id="versionDiffTable" hidden>
+          <thead>
+            <tr>
+              <th>项目</th>
+              <th>当前</th>
+              <th>基准</th>
+              <th>Δ（当前−基准）</th>
+            </tr>
+          </thead>
+          <tbody id="versionDiffBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 48px">
+        <h2>版本快照 <span class="tag">迭代对比</span></h2>
+        <p class="formula-note" style="margin-top: 0; margin-bottom: 16px">
+          在「参数输入」中填写<strong>版本名称</strong>后，点击<strong>保存为版本快照</strong>即可加入下列列表。
+        </p>
+        <div class="snapshots">
+          <ul class="snapshot-list" id="snapshotList"></ul>
+        </div>
+        <div class="table-scroll" id="compareTableWrap" hidden>
+          <table class="compare-table" id="compareTable" hidden>
+            <thead>
+              <tr>
+                <th>项目</th>
+                <th id="thCurrent">当前</th>
+                <th id="thA">快照 A</th>
+                <th id="thB">快照 B</th>
+              </tr>
+            </thead>
+            <tbody id="compareBody"></tbody>
+          </table>
+        </div>
+        <div class="btn-row" style="margin-top: 12px">
+          <button type="button" class="secondary" id="btnClearSnaps">清空全部快照</button>
+        </div>
+    </div>
+
+    <div
+      id="refScoreModal"
+      class="ref-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="refModalTitle"
+      hidden
+    >
+      <div class="ref-modal__backdrop" id="refModalBackdrop" aria-hidden="true"></div>
+      <div class="ref-modal__panel card">
+        <div class="ref-modal__head">
+          <h2 id="refModalTitle">2025 总决赛 · 无人机短距起降成绩参考</h2>
+          <button type="button" class="ghost ref-modal__close" id="refModalCloseX" aria-label="关闭">×</button>
+        </div>
+        <p class="formula-note ref-modal__current" id="refModalCurrentLine">
+          当前单轮试算 <strong id="refModalCurrentS">—</strong>（与表中「较高机组单轮」比较 Δ）
+        </p>
+        <div class="field" style="margin-bottom: 0">
+          <label for="refSearch">搜索学校</label>
+          <input type="search" id="refSearch" placeholder="输入校名关键字" autocomplete="off" />
+        </div>
+        <div class="table-scroll ref-modal__scroll">
+          <table class="compare-table ref-table" id="refScoreTable">
+            <thead>
+              <tr>
+                <th>名次</th>
+                <th>参赛单位</th>
+                <th>机组1</th>
+                <th>机组2</th>
+                <th>团体Σ</th>
+                <th>获奖</th>
+                <th>Δ 较高机组</th>
+              </tr>
+            </thead>
+            <tbody id="refTableBody"></tbody>
+          </table>
+        </div>
+        <div class="ref-modal__add">
+          <p class="formula-note"><strong>添加到本机库</strong>（自填成绩，与内置表一并保存）</p>
+          <div class="field ref-add-school">
+            <label for="refAddSchool">学校名称</label>
+            <input type="text" id="refAddSchool" maxlength="120" placeholder="例如：××大学" autocomplete="off" />
+          </div>
+          <div class="ref-add-grid">
+            <div class="field">
+              <label for="refAddS1">机组1 单轮</label>
+              <input type="number" id="refAddS1" step="0.01" min="0" placeholder="0.00" />
+            </div>
+            <div class="field">
+              <label for="refAddS2">机组2 单轮</label>
+              <input type="number" id="refAddS2" step="0.01" min="0" placeholder="0.00" />
+            </div>
+            <div class="field">
+              <label for="refAddRank">名次（可空）</label>
+              <input type="number" id="refAddRank" step="1" min="0" placeholder="可选" />
+            </div>
+          </div>
+          <div class="btn-row">
+            <button type="button" class="secondary" id="btnRefAdd">加入库并保存</button>
+            <button type="button" class="ghost" id="btnRefReset">恢复内置数据</button>
+          </div>
+        </div>
+        <div class="btn-row ref-modal__foot">
+          <button type="button" class="primary" id="refModalCloseBtn">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="deploy-hint">
+      <strong>如何让别人访问：</strong> 本页为纯静态文件，将整个文件夹上传到
+      <a href="https://pages.github.com/" target="_blank" rel="noopener">GitHub Pages</a>、
+      <a href="https://www.netlify.com/" target="_blank" rel="noopener">Netlify</a>
+      或任意静态托管即可；也可用 <code>npx serve .</code> 在局域网内临时分享。
+    </div>
+
+    <footer>
+      本页对应《2026中国大学生飞行器设计创新大赛竞赛规则》<strong>无人机短距起降</strong>项目成绩评定；仅供辅助核对，正式成绩以大赛发布的规则文本与现场裁判记录为准。
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = "model-aircraft-score-snapshots-v1";
+
+      function chartPalette() {
+        const st = getComputedStyle(document.documentElement);
+        function pick(n, fb) {
+          const v = st.getPropertyValue(n).trim();
+          return v || fb;
+        }
+        return {
+          black: pick("--chart-bar-fill", "#000000"),
+          ref: pick("--chart-ref-fill", "#6b7280"),
+          nearBlack: pick("--chart-value-text", "#1c2024"),
+          slate: pick("--chart-axis-text", "#60646c"),
+          white: pick("--chart-surface", "#ffffff"),
+        };
+      }
+
+      function roundInt(x) {
+        return Math.round(Number(x) || 0);
+      }
+
+      function factorB(takeoffM) {
+        const t = Number(takeoffM);
+        if (Number.isNaN(t) || t < 0) return { B: 0, warn: "起飞距离无效" };
+        if (t <= 1.2) return { B: 20, warn: "" };
+        if (t <= 2.4) return { B: 15, warn: "" };
+        return {
+          B: 0,
+          warn: "起飞距离 > 2.4 m：规则 6.1 仅列出两档 B，本工具按 B=0 计，请以现场裁判解释为准",
+        };
+      }
+
+      function computeTurn(wp, we, bmm, takeoffM) {
+        const Wp = roundInt(wp);
+        const We = roundInt(we);
+        const b = roundInt(bmm);
+        const { B, warn } = factorB(takeoffM);
+        const denom = Math.pow(We / 453 - 1, 4) + 8.9;
+        const M = 11 / denom;
+        const Z = B - Math.pow(b / 305, 1.5);
+        /* 规程 6.1：S_turn = 3*(Wp/453)*M*B + Z */
+        let S = 3 * (Wp / 453) * M * B + Z;
+        if (S < 0) S = 0;
+        S = Math.round(S * 100) / 100;
+        return { Wp, We, b, B, M, Z, S, warn };
+      }
+
+      function readInputs() {
+        return {
+          wp: document.getElementById("wp").value,
+          we: document.getElementById("we").value,
+          b: document.getElementById("b").value,
+          takeoff: document.getElementById("takeoff").value,
+        };
+      }
+
+      /** 兼容旧快照中的 t1；缺省按 1.5 m */
+      function takeoffFromSnap(s) {
+        if (!s) return 1.5;
+        if (s.takeoff != null && Number.isFinite(Number(s.takeoff))) return Number(s.takeoff);
+        if (s.t1 != null && Number.isFinite(Number(s.t1))) return Number(s.t1);
+        return 1.5;
+      }
+
+      function snapshotFromInputs() {
+        const x = readInputs();
+        return {
+          wp: roundInt(x.wp),
+          we: roundInt(x.we),
+          b: roundInt(x.b),
+          takeoff: Number(x.takeoff),
+          at: Date.now(),
+        };
+      }
+
+      function formatDetail(r) {
+        return "B=" + r.B + "，M=" + r.M.toFixed(4) + "，Z=" + r.Z.toFixed(2);
+      }
+
+      const DIFF_IDX_KEY = "model-aircraft-diff-base-idx";
+
+      function formatParamNum(v, decimals) {
+        if (v == null || v === "") return "—";
+        const n = Number(v);
+        if (!Number.isFinite(n)) return "—";
+        return decimals != null ? n.toFixed(decimals) : String(n);
+      }
+
+      function populateDiffSelect() {
+        const sel = document.getElementById("diffSnapSelect");
+        if (!sel) return;
+        const list = loadSnapshots();
+        const prev = sel.value;
+        sel.innerHTML = '<option value="">— 请选择快照 —</option>';
+        list.forEach((s, i) => {
+          const opt = document.createElement("option");
+          opt.value = String(i);
+          opt.textContent =
+            (s.name || "未命名") +
+            " · 单轮 " +
+            (s.total != null ? s.total.toFixed(2) : "—") +
+            " · " +
+            new Date(s.at).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+          sel.appendChild(opt);
+        });
+        const saved = localStorage.getItem(DIFF_IDX_KEY);
+        let pick = prev;
+        if (pick !== "" && !list[Number(pick)]) pick = "";
+        if (pick === "" && saved != null && list[Number(saved)]) pick = saved;
+        sel.value = pick;
+        if (sel.value && list[Number(sel.value)]) {
+          localStorage.setItem(DIFF_IDX_KEY, sel.value);
+        } else {
+          localStorage.removeItem(DIFF_IDX_KEY);
+        }
+      }
+
+      function appendDiffRow(body, key, cur, base, delta, decimals, rowClass) {
+        const tr = document.createElement("tr");
+        if (rowClass) tr.className = rowClass;
+        const td0 = document.createElement("td");
+        td0.textContent = key;
+        tr.appendChild(td0);
+        const td1 = document.createElement("td");
+        td1.textContent = formatParamNum(cur, decimals);
+        tr.appendChild(td1);
+        const td2 = document.createElement("td");
+        td2.textContent = formatParamNum(base, decimals);
+        tr.appendChild(td2);
+        const td3 = document.createElement("td");
+        if (delta == null || Number.isNaN(delta)) {
+          td3.textContent = "—";
+        } else {
+          const v = Math.round(delta * 100) / 100;
+          const span = document.createElement("span");
+          span.className = v >= 0 ? "delta-pos" : "delta-neg";
+          span.textContent = (v >= 0 ? "+" : "") + v.toFixed(2);
+          td3.appendChild(span);
+        }
+        tr.appendChild(td3);
+        body.appendChild(tr);
+      }
+
+      function renderDiffTable() {
+        const table = document.getElementById("versionDiffTable");
+        const wrap = document.getElementById("versionDiffTableWrap");
+        const body = document.getElementById("versionDiffBody");
+        const empty = document.getElementById("versionDiffEmpty");
+        const sel = document.getElementById("diffSnapSelect");
+        const list = loadSnapshots();
+
+        if (list.length === 0) {
+          table.hidden = true;
+          if (wrap) wrap.hidden = true;
+          empty.hidden = false;
+          empty.textContent = "暂无快照：请先在「参数输入」中保存至少一个版本快照。";
+          return;
+        }
+
+        const idx = sel.value === "" ? -1 : Number(sel.value);
+        const snap = idx >= 0 && list[idx] ? list[idx] : null;
+
+        if (!snap) {
+          table.hidden = true;
+          if (wrap) wrap.hidden = true;
+          empty.hidden = false;
+          empty.textContent = "请在上方下拉框中选择一个基准快照，即可查看与当前方案的逐项差距。";
+          return;
+        }
+
+        empty.hidden = true;
+        table.hidden = false;
+        if (wrap) wrap.hidden = false;
+        body.innerHTML = "";
+
+        const cur = snapshotFromInputs();
+        const st = takeoffFromSnap(snap);
+        const rC = computeTurn(cur.wp, cur.we, cur.b, cur.takeoff);
+        const rS = computeTurn(snap.wp, snap.we, snap.b, st);
+
+        appendDiffRow(body, "W_payload (g)", cur.wp, snap.wp, Number(cur.wp) - snap.wp, 0, null);
+        appendDiffRow(body, "W_empty (g)", cur.we, snap.we, Number(cur.we) - snap.we, 0, null);
+        appendDiffRow(body, "b (mm)", cur.b, snap.b, Number(cur.b) - snap.b, 0, null);
+        appendDiffRow(body, "起飞 (m)", cur.takeoff, st, Number(cur.takeoff) - st, 2, null);
+        appendDiffRow(body, "S_turn", rC.S, rS.S, rC.S - rS.S, 2, "diff-score-start diff-stotal");
+      }
+
+      /** 一等奖 / 二等奖 / 三等奖 各自组内「较高机组分」的最大值，作柱色参考线 */
+      function getAwardTierMaxHighs() {
+        try {
+          const rows = getRefRows();
+          function maxHighForAward(award) {
+            let m = -Infinity;
+            rows.forEach(function (r) {
+              if ((r.award || "").trim() !== award) return;
+              const h = Math.max(Number(r.s1) || 0, Number(r.s2) || 0);
+              if (Number.isFinite(h) && h > m) m = h;
+            });
+            return m === -Infinity ? null : m;
+          }
+          return {
+            hi1: maxHighForAward("一等奖"),
+            hi2: maxHighForAward("二等奖"),
+            hi3: maxHighForAward("三等奖"),
+          };
+        } catch {
+          return { hi1: null, hi2: null, hi3: null };
+        }
+      }
+
+      function chartTierColors() {
+        const st = getComputedStyle(document.documentElement);
+        function pick(n, fb) {
+          const v = st.getPropertyValue(n).trim();
+          return v || fb;
+        }
+        return {
+          high: pick("--chart-tier-high", "#b5ead7"),
+          mid: pick("--chart-tier-mid", "#ffdac1"),
+          low: pick("--chart-tier-low", "#ffb7b2"),
+        };
+      }
+
+      /**
+       * 绿：≥ 一等奖组内参考最高分；黄：≥ 三等奖组内参考最高分且 < 一等奖线；红：< 三等奖线。
+       * 二等奖组内最高分落在黄区区间内，仅作语义参考。缺奖级数据时逐级降级。
+       */
+      function tierFillForAwardScores(score, H, pal) {
+        const s = Number(score) || 0;
+        const h1 = H.hi1;
+        const h2 = H.hi2;
+        const h3 = H.hi3;
+        if (h1 != null && h3 != null) {
+          if (s >= h1) return pal.high;
+          if (s >= h3) return pal.mid;
+          return pal.low;
+        }
+        if (h1 != null && h2 != null) {
+          if (s >= h1) return pal.high;
+          if (s >= h2) return pal.mid;
+          return pal.low;
+        }
+        if (h2 != null && h3 != null) {
+          if (s >= h2) return pal.high;
+          if (s >= h3) return pal.mid;
+          return pal.low;
+        }
+        if (h1 != null) {
+          return s >= h1 ? pal.high : pal.mid;
+        }
+        if (h2 != null) {
+          return s >= h2 ? pal.mid : pal.low;
+        }
+        if (h3 != null) {
+          return s >= h3 ? pal.mid : pal.low;
+        }
+        return pal.mid;
+      }
+
+      /** 纵轴上限：略高于当前分，使柱高随分数连续变化（否则 max=当前分 时柱永远满格且重绘易抖） */
+      function chartYMax(s) {
+        const v = Math.max(0, Number(s) || 0);
+        if (v <= 1e-9) return 10;
+        const m = Math.max(v * 1.22, v + 0.35);
+        return Math.ceil(m * 100) / 100;
+      }
+
+      function renderBarChart(score) {
+        const host = document.getElementById("barChart");
+        if (!host) return;
+        const P = chartPalette();
+        const value = Math.max(0, Number(score) || 0);
+        const awardHi = getAwardTierMaxHighs();
+        const tierPal = chartTierColors();
+        const fillCur = tierFillForAwardScores(value, awardHi, tierPal);
+
+        const H = awardHi;
+        function normHi(x) {
+          if (x == null || !Number.isFinite(Number(x))) return null;
+          return Math.max(0, Number(x));
+        }
+        const hi1 = normHi(H.hi1);
+        const hi2 = normHi(H.hi2);
+        const hi3 = normHi(H.hi3);
+
+        const w = Math.max(host.clientWidth || 320, 280);
+        const shortLab = w < 400;
+        const lab1 = shortLab ? "一等" : "一等奖";
+        const lab2 = shortLab ? "二等" : "二等奖";
+        const lab3 = shortLab ? "三等" : "三等奖";
+
+        const tipParts = [];
+        if (hi1 != null) tipParts.push(lab1 + " " + hi1.toFixed(2));
+        if (hi2 != null) tipParts.push(lab2 + " " + hi2.toFixed(2));
+        if (hi3 != null) tipParts.push(lab3 + " " + hi3.toFixed(2));
+        host.title = tipParts.length ? "奖级组内较高分峰值：" + tipParts.join(" · ") : "";
+
+        const maxInput = Math.max(
+          value,
+          hi1 != null ? hi1 : 0,
+          hi2 != null ? hi2 : 0,
+          hi3 != null ? hi3 : 0,
+          1e-9
+        );
+        const maxVal = Math.max(chartYMax(maxInput), 1e-6);
+
+        function clamp01(f) {
+          if (!Number.isFinite(f) || f < 0) return 0;
+          return f > 1 ? 1 : f;
+        }
+        const fTrial = clamp01(value / maxVal);
+        const f1 = clamp01((hi1 != null ? hi1 : 0) / maxVal);
+        const f2 = clamp01((hi2 != null ? hi2 : 0) / maxVal);
+        const f3 = clamp01((hi3 != null ? hi3 : 0) / maxVal);
+
+        const h = 220;
+        const pad = { l: 8, r: 8, t: 16, b: 38 };
+        const innerW = w - pad.l - pad.r;
+        const innerH = h - pad.t - pad.b;
+        const nCol = 4;
+        const barGap = w < 360 ? 4 : w < 520 ? 6 : 8;
+        const barW = (innerW - (nCol - 1) * barGap) / nCol;
+        const fsVal = w < 360 ? "11" : "12";
+        const fsLab = w < 340 ? "10" : "11";
+
+        const NS = "http://www.w3.org/2000/svg";
+        let svg = host.querySelector("svg");
+        const needBuild =
+          !svg ||
+          Number(svg.getAttribute("data-w") || 0) !== w ||
+          svg.getAttribute("data-layout") !== "quad-tier";
+
+        function yForScore(s) {
+          const t = Math.max(0, Math.min(Number(s) || 0, maxVal));
+          return pad.t + innerH * (1 - t / maxVal);
+        }
+
+        if (needBuild) {
+          host.textContent = "";
+          svg = document.createElementNS(NS, "svg");
+          svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+          svg.setAttribute("width", String(w));
+          svg.setAttribute("height", String(h));
+          svg.setAttribute("data-w", String(w));
+          svg.setAttribute("data-layout", "quad-tier");
+
+          const yLabel = document.createElementNS(NS, "text");
+          yLabel.setAttribute("class", "chart-y-label");
+          yLabel.setAttribute("x", String(pad.l));
+          yLabel.setAttribute("y", "14");
+          yLabel.setAttribute("fill", P.slate);
+          yLabel.setAttribute("font-size", "12");
+          yLabel.setAttribute("font-family", "Inter, Noto Sans SC, sans-serif");
+          svg.appendChild(yLabel);
+
+          const gBands = document.createElementNS(NS, "g");
+          gBands.setAttribute("class", "chart-tier-bands");
+          for (let zi = 0; zi < 3; zi++) {
+            const r = document.createElementNS(NS, "rect");
+            r.setAttribute("class", "tier-zone tier-zone--" + zi);
+            r.setAttribute("opacity", "0");
+            r.setAttribute("rx", "3");
+            gBands.appendChild(r);
+          }
+          svg.appendChild(gBands);
+
+          const strokeTier = ["#2f8f62", "#c97935", "#c94f58"];
+          const gH = document.createElementNS(NS, "g");
+          gH.setAttribute("class", "chart-tier-hlines");
+          [1, 2, 3].forEach(function (ti) {
+            const line = document.createElementNS(NS, "line");
+            line.setAttribute("class", "tier-rule tier-rule--" + ti);
+            line.setAttribute("stroke", strokeTier[ti - 1]);
+            line.setAttribute("stroke-width", "1.35");
+            line.setAttribute("stroke-dasharray", "5 4");
+            line.setAttribute("stroke-linecap", "round");
+            line.setAttribute("opacity", "0");
+            gH.appendChild(line);
+            const tx = document.createElementNS(NS, "text");
+            tx.setAttribute("class", "tier-rule-lab tier-rule-lab--" + ti);
+            tx.setAttribute("text-anchor", "end");
+            tx.setAttribute("fill", strokeTier[ti - 1]);
+            tx.setAttribute("font-size", w < 360 ? "8.5" : "9");
+            tx.setAttribute("font-weight", "600");
+            tx.setAttribute("font-family", "Inter, Noto Sans SC, sans-serif");
+            tx.setAttribute("opacity", "0");
+            gH.appendChild(tx);
+          });
+
+          function addBarRect(x, cls, fill) {
+            const rect = document.createElementNS(NS, "rect");
+            rect.setAttribute("class", "bar-fill bar-fill--smooth " + cls);
+            rect.setAttribute("x", String(x));
+            rect.setAttribute("y", String(pad.t));
+            rect.setAttribute("width", String(barW));
+            rect.setAttribute("height", String(innerH));
+            rect.setAttribute("rx", "6");
+            rect.setAttribute("fill", fill);
+            svg.appendChild(rect);
+          }
+
+          function addBarTexts(cls) {
+            const valText = document.createElementNS(NS, "text");
+            valText.setAttribute("class", "bar-value " + cls + "-val");
+            valText.setAttribute("text-anchor", "middle");
+            valText.setAttribute("fill", P.nearBlack);
+            valText.setAttribute("font-size", fsVal);
+            valText.setAttribute("font-weight", "600");
+            valText.setAttribute("font-family", "Inter, Noto Sans SC, sans-serif");
+            svg.appendChild(valText);
+            const labText = document.createElementNS(NS, "text");
+            labText.setAttribute("class", "bar-label " + cls + "-lab");
+            labText.setAttribute("text-anchor", "middle");
+            labText.setAttribute("fill", P.slate);
+            labText.setAttribute("font-size", fsLab);
+            labText.setAttribute("font-family", "Inter, Noto Sans SC, sans-serif");
+            svg.appendChild(labText);
+          }
+
+          const xAt = function (i) {
+            return pad.l + i * (barW + barGap);
+          };
+          addBarRect(xAt(0), "bar-col--trial", fillCur);
+          addBarRect(xAt(1), "bar-col--r1", tierPal.high);
+          addBarRect(xAt(2), "bar-col--r2", tierPal.mid);
+          addBarRect(xAt(3), "bar-col--r3", tierPal.low);
+
+          svg.appendChild(gH);
+
+          addBarTexts("bar-col--trial");
+          addBarTexts("bar-col--r1");
+          addBarTexts("bar-col--r2");
+          addBarTexts("bar-col--r3");
+
+          host.appendChild(svg);
+        }
+
+        const yLabel = svg.querySelector(".chart-y-label");
+        const rectTrial = svg.querySelector(".bar-col--trial");
+        const rectR1 = svg.querySelector(".bar-col--r1");
+        const rectR2 = svg.querySelector(".bar-col--r2");
+        const rectR3 = svg.querySelector(".bar-col--r3");
+        const valTrial = svg.querySelector(".bar-col--trial-val");
+        const valR1 = svg.querySelector(".bar-col--r1-val");
+        const valR2 = svg.querySelector(".bar-col--r2-val");
+        const valR3 = svg.querySelector(".bar-col--r3-val");
+        const labTrial = svg.querySelector(".bar-col--trial-lab");
+        const labR1 = svg.querySelector(".bar-col--r1-lab");
+        const labR2 = svg.querySelector(".bar-col--r2-lab");
+        const labR3 = svg.querySelector(".bar-col--r3-lab");
+
+        if (yLabel) yLabel.textContent = "分数（0–" + maxVal.toFixed(1) + "）";
+
+        function applyBarF(rect, valText, labText, f, xCol, valDisplay, labStr) {
+          if (!rect) return;
+          if (needBuild) {
+            rect.style.setProperty("transition", "none");
+            rect.style.transform = "scaleY(" + f + ")";
+            requestAnimationFrame(function () {
+              rect.style.removeProperty("transition");
+              rect.style.transform = "scaleY(" + f + ")";
+            });
+          } else {
+            rect.style.transform = "scaleY(" + f + ")";
+          }
+          if (valText) {
+            valText.setAttribute("font-size", fsVal);
+            const barTop = pad.t + innerH * (1 - f);
+            valText.setAttribute("x", String(xCol + barW / 2));
+            valText.setAttribute("y", String(barTop - 5));
+            valText.textContent =
+              valDisplay === null || valDisplay === undefined ? "—" : Number(valDisplay).toFixed(2);
+          }
+          if (labText) {
+            labText.setAttribute("font-size", fsLab);
+            labText.setAttribute("x", String(xCol + barW / 2));
+            labText.setAttribute("y", String(h - 9));
+            labText.textContent = labStr;
+          }
+        }
+
+        const xAtU = function (i) {
+          return pad.l + i * (barW + barGap);
+        };
+        applyBarF(rectTrial, valTrial, labTrial, fTrial, xAtU(0), value, "试算");
+        applyBarF(rectR1, valR1, labR1, f1, xAtU(1), hi1, lab1);
+        applyBarF(rectR2, valR2, labR2, f2, xAtU(2), hi2, lab2);
+        applyBarF(rectR3, valR3, labR3, f3, xAtU(3), hi3, lab3);
+
+        if (yLabel) yLabel.setAttribute("fill", P.slate);
+        if (rectTrial) rectTrial.setAttribute("fill", fillCur);
+        if (rectR1) rectR1.setAttribute("fill", tierPal.high);
+        if (rectR2) rectR2.setAttribute("fill", tierPal.mid);
+        if (rectR3) rectR3.setAttribute("fill", tierPal.low);
+        [valTrial, valR1, valR2, valR3].forEach(function (t) {
+          if (t) t.setAttribute("fill", P.nearBlack);
+        });
+        [labTrial, labR1, labR2, labR3].forEach(function (t) {
+          if (t) t.setAttribute("fill", P.slate);
+        });
+
+        const yBot = pad.t + innerH;
+        const xL = pad.l;
+        const xR = pad.l + innerW;
+        const ruleStroke = ["#2f8f62", "#c97935", "#c94f58"];
+
+        const gBandsEl = svg.querySelector(".chart-tier-bands");
+        if (gBandsEl) {
+          const zr = gBandsEl.querySelectorAll(".tier-zone");
+          const canBand = hi1 != null && hi3 != null && hi1 >= hi3;
+          if (canBand && zr.length === 3) {
+            const y1 = yForScore(hi1);
+            const y3 = yForScore(hi3);
+            const h0 = Math.max(0, y1 - pad.t);
+            const h1z = Math.max(0, y3 - y1);
+            const h2z = Math.max(0, yBot - y3);
+            zr[0].setAttribute("x", String(xL));
+            zr[0].setAttribute("y", String(pad.t));
+            zr[0].setAttribute("width", String(innerW));
+            zr[0].setAttribute("height", String(h0));
+            zr[0].setAttribute("fill", tierPal.high);
+            zr[0].setAttribute("opacity", "0.13");
+
+            zr[1].setAttribute("x", String(xL));
+            zr[1].setAttribute("y", String(y1));
+            zr[1].setAttribute("width", String(innerW));
+            zr[1].setAttribute("height", String(h1z));
+            zr[1].setAttribute("fill", tierPal.mid);
+            zr[1].setAttribute("opacity", "0.14");
+
+            zr[2].setAttribute("x", String(xL));
+            zr[2].setAttribute("y", String(y3));
+            zr[2].setAttribute("width", String(innerW));
+            zr[2].setAttribute("height", String(h2z));
+            zr[2].setAttribute("fill", tierPal.low);
+            zr[2].setAttribute("opacity", "0.14");
+          } else {
+            zr.forEach(function (r) {
+              r.setAttribute("opacity", "0");
+            });
+          }
+        }
+
+        [
+          { hi: hi1, lab: lab1 },
+          { hi: hi2, lab: lab2 },
+          { hi: hi3, lab: lab3 },
+        ].forEach(function (rule, idx) {
+          const ti = idx + 1;
+          const line = svg.querySelector(".tier-rule--" + ti);
+          const lab = svg.querySelector(".tier-rule-lab--" + ti);
+          if (rule.hi == null || !Number.isFinite(rule.hi)) {
+            if (line) line.setAttribute("opacity", "0");
+            if (lab) lab.setAttribute("opacity", "0");
+            return;
+          }
+          const yy = yForScore(rule.hi);
+          if (line) {
+            line.setAttribute("x1", String(xL));
+            line.setAttribute("x2", String(xR));
+            line.setAttribute("y1", String(yy));
+            line.setAttribute("y2", String(yy));
+            line.setAttribute("stroke", ruleStroke[idx]);
+            line.setAttribute("opacity", "0.92");
+          }
+          if (lab) {
+            lab.setAttribute("x", String(xR - 2));
+            lab.setAttribute("y", String(yy - 3));
+            lab.setAttribute("fill", ruleStroke[idx]);
+            lab.textContent = rule.lab + " " + rule.hi.toFixed(2);
+            lab.setAttribute("opacity", "1");
+          }
+        });
+      }
+
+      function escapeSvgText(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      /** 0–3 m 标尺：三段对应 B=20 / 15 / 0，分区着色 */
+      function renderTakeoffRibbon(containerId, takeoffM) {
+        const el = document.getElementById(containerId);
+        const P = chartPalette();
+        const W = Math.max(el.clientWidth || 320, 260);
+        /* 高度需大于底部刻度文字基线 + 字形下沉；与 .ribbon-host 固定高度一致 */
+        const H = 88;
+        const pad = 8;
+        const maxM = 3;
+        const t = Number(takeoffM);
+        const xScale = (m) => pad + (Math.min(Math.max(m, 0), maxM) / maxM) * (W - 2 * pad);
+
+        const z1 = pad + (1.2 / maxM) * (W - 2 * pad);
+        const z2 = pad + (2.4 / maxM) * (W - 2 * pad);
+
+        const seg = {
+          a: { fill: "#b5ead7", stroke: "#5dbea5", label: "#1d6b52" },
+          b: { fill: "#ffdac1", stroke: "#e8a882", label: "#9a5c2e" },
+          c: { fill: "#ffb7b2", stroke: "#e89196", label: "#a61e3a" },
+        };
+
+        let svg =
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' +
+          W +
+          " " +
+          H +
+          '" preserveAspectRatio="xMidYMid meet" width="100%" height="88">';
+        svg +=
+          '<rect x="' +
+          pad +
+          '" y="22" width="' +
+          (z1 - pad) +
+          '" height="20" rx="6" fill="' +
+          seg.a.fill +
+          '" stroke="' +
+          seg.a.stroke +
+          '" stroke-opacity="0.55" stroke-width="1"/>';
+        svg +=
+          '<rect x="' +
+          z1 +
+          '" y="22" width="' +
+          (z2 - z1) +
+          '" height="20" fill="' +
+          seg.b.fill +
+          '" stroke="' +
+          seg.b.stroke +
+          '" stroke-opacity="0.55" stroke-width="1"/>';
+        svg +=
+          '<rect x="' +
+          z2 +
+          '" y="22" width="' +
+          (W - pad - z2) +
+          '" height="20" rx="6" fill="' +
+          seg.c.fill +
+          '" stroke="' +
+          seg.c.stroke +
+          '" stroke-opacity="0.55" stroke-width="1"/>';
+
+        [
+          { m: 1.2, col: seg.b },
+          { m: 2.4, col: seg.c },
+        ].forEach(({ m, col }) => {
+          const x = pad + (m / maxM) * (W - 2 * pad);
+          svg +=
+            '<line x1="' +
+            x +
+            '" y1="18" x2="' +
+            x +
+            '" y2="48" stroke="' +
+            col.stroke +
+            '" stroke-opacity="0.75" stroke-dasharray="4 3" stroke-width="1.25"/>';
+          svg +=
+            '<text x="' +
+            x +
+            '" y="14" fill="' +
+            col.label +
+            '" font-size="10" font-weight="600" text-anchor="middle" font-family="Inter, Noto Sans SC, sans-serif">' +
+            m +
+            "m</text>";
+        });
+
+        svg +=
+          '<text x="' +
+          pad +
+          '" y="82" fill="' +
+          seg.a.label +
+          '" font-size="10" font-weight="600" font-family="Inter, Noto Sans SC, sans-serif">0</text>';
+        svg +=
+          '<text x="' +
+          (W - pad) +
+          '" y="82" fill="' +
+          P.slate +
+          '" font-size="10" text-anchor="end" font-family="Inter, Noto Sans SC, sans-serif">' +
+          maxM +
+          "m</text>";
+
+        let dotStroke = P.black;
+        let dotFill = P.white;
+        if (Number.isFinite(t) && t >= 0) {
+          if (t <= 1.2) {
+            dotStroke = seg.a.label;
+            dotFill = "#e8faf3";
+          } else if (t <= 2.4) {
+            dotStroke = seg.b.label;
+            dotFill = "#fff4eb";
+          } else {
+            dotStroke = seg.c.label;
+            dotFill = "#fff0f0";
+          }
+        }
+
+        if (Number.isFinite(t) && t >= 0) {
+          const px = xScale(t);
+          const cx = Math.min(W - pad, Math.max(pad, px));
+          svg +=
+            '<circle cx="' +
+            cx +
+            '" cy="32" r="7" fill="' +
+            dotFill +
+            '" stroke="' +
+            dotStroke +
+            '" stroke-width="2.25"/>';
+          svg +=
+            '<text x="' +
+            cx +
+            '" y="58" fill="' +
+            dotStroke +
+            '" font-size="11" font-weight="600" font-family="Inter, Noto Sans SC, sans-serif" text-anchor="middle">' +
+            (Number.isFinite(t) ? t.toFixed(2) : "—") +
+            "</text>";
+        }
+        svg += "</svg>";
+        el.innerHTML = svg;
+      }
+
+      function update() {
+        const x = readInputs();
+        const r = computeTurn(x.wp, x.we, x.b, x.takeoff);
+        const score = r.S;
+
+        document.getElementById("outS").textContent = r.S.toFixed(2);
+        document.getElementById("detail1").textContent = formatDetail(r);
+
+        document.getElementById("takeoffReadout").textContent = Number(x.takeoff).toFixed(2);
+
+        const primaryBlock = document.getElementById("scorePrimaryBlock");
+        const zeroBanner = document.getElementById("scoreZeroBanner");
+        const isZero = r.S === 0;
+        primaryBlock.classList.toggle("result-block--score-zero", isZero);
+        zeroBanner.hidden = !isZero;
+
+        const w1 = document.getElementById("warn1");
+        w1.hidden = !r.warn;
+        w1.textContent = r.warn;
+
+        renderCompareTable();
+        renderBarChart(score);
+        renderTakeoffRibbon("takeoffViz", x.takeoff);
+        renderDiffTable();
+
+        const refModalEl = document.getElementById("refScoreModal");
+        if (refModalEl && !refModalEl.hidden) {
+          const sc = document.querySelector(".ref-modal__scroll");
+          const st = sc ? sc.scrollTop : 0;
+          refreshRefModalCurrent();
+          renderRefTable();
+          if (sc) sc.scrollTop = st;
+        }
+
+        const snapErr = document.getElementById("snapshotSaveError");
+        if (snapErr && !snapErr.hidden && r.S > 0 && snapErr.textContent.indexOf("成绩为 0") !== -1) {
+          clearSnapshotSaveError();
+        }
+      }
+
+      function loadSnapshots() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return [];
+          const arr = JSON.parse(raw);
+          return Array.isArray(arr) ? arr : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveSnapshots(list) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      }
+
+      let comparePick = [];
+
+      function renderSnapshotList() {
+        const list = loadSnapshots();
+        const ul = document.getElementById("snapshotList");
+        ul.innerHTML = "";
+        list
+          .slice()
+          .reverse()
+          .forEach((snap, revIdx) => {
+            const idx = list.length - 1 - revIdx;
+            const li = document.createElement("li");
+            if (comparePick.indexOf(idx) >= 0) {
+              li.style.borderColor =
+                getComputedStyle(document.documentElement).getPropertyValue("--expo-black").trim() || "#000";
+              li.style.background = "rgba(0, 0, 0, 0.05)";
+              li.style.boxShadow = "0 0 0 1px rgba(0, 0, 0, 0.12)";
+            }
+            const left = document.createElement("div");
+            const name = snap.name || "未命名";
+            const d = new Date(snap.at);
+            left.innerHTML =
+              "<strong>" +
+              escapeHtml(name) +
+              '</strong><div class="meta">' +
+              d.toLocaleString("zh-CN") +
+              " · S<sub>turn</sub> " +
+              (snap.total != null ? snap.total.toFixed(2) : "—") +
+              "</div>";
+            const btns = document.createElement("div");
+            btns.style.display = "flex";
+            btns.style.gap = "6px";
+            const bCompare = document.createElement("button");
+            bCompare.type = "button";
+            bCompare.className = "ghost";
+            bCompare.textContent = "对比";
+            bCompare.addEventListener("click", () => toggleCompare(idx));
+            const bLoad = document.createElement("button");
+            bLoad.type = "button";
+            bLoad.className = "secondary";
+            bLoad.textContent = "载入";
+            bLoad.addEventListener("click", () => loadSnapshot(snap));
+            const bDel = document.createElement("button");
+            bDel.type = "button";
+            bDel.className = "ghost";
+            bDel.textContent = "删";
+            bDel.addEventListener("click", () => deleteSnapshot(idx));
+            btns.appendChild(bLoad);
+            btns.appendChild(bCompare);
+            btns.appendChild(bDel);
+            li.appendChild(left);
+            li.appendChild(btns);
+            ul.appendChild(li);
+          });
+        populateDiffSelect();
+        renderDiffTable();
+      }
+
+      function toggleCompare(idx) {
+        const i = comparePick.indexOf(idx);
+        if (i >= 0) comparePick.splice(i, 1);
+        else {
+          comparePick.push(idx);
+          if (comparePick.length > 2) comparePick.shift();
+        }
+        renderSnapshotList();
+        renderCompareTable();
+      }
+
+      function loadSnapshot(snap) {
+        document.getElementById("wp").value = snap.wp;
+        document.getElementById("we").value = snap.we;
+        document.getElementById("b").value = snap.b;
+        document.getElementById("takeoff").value = takeoffFromSnap(snap);
+        syncSlidersFromNumbers();
+        update();
+      }
+
+      function deleteSnapshot(idx) {
+        const list = loadSnapshots();
+        list.splice(idx, 1);
+        saveSnapshots(list);
+        const saved = localStorage.getItem(DIFF_IDX_KEY);
+        if (saved !== null) {
+          const si = Number(saved);
+          if (si === idx) localStorage.removeItem(DIFF_IDX_KEY);
+          else if (si > idx) localStorage.setItem(DIFF_IDX_KEY, String(si - 1));
+        }
+        comparePick = comparePick
+          .map((j) => (j > idx ? j - 1 : j))
+          .filter((j) => j >= 0 && j < list.length);
+        renderSnapshotList();
+        renderCompareTable();
+      }
+
+      function escapeHtml(s) {
+        const d = document.createElement("div");
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      function renderCompareTable() {
+        const list = loadSnapshots();
+        const cur = snapshotFromInputs();
+        const rCur = computeTurn(cur.wp, cur.we, cur.b, cur.takeoff);
+        const total = rCur.S;
+
+        const aIdx = comparePick[comparePick.length - 2];
+        const bIdx = comparePick[comparePick.length - 1];
+        const snapA = aIdx != null ? list[aIdx] : null;
+        const snapB = bIdx != null ? list[bIdx] : null;
+
+        const table = document.getElementById("compareTable");
+        const compareWrap = document.getElementById("compareTableWrap");
+        const body = document.getElementById("compareBody");
+        document.getElementById("thCurrent").textContent = "当前";
+        document.getElementById("thA").textContent = snapA ? snapA.name || "快照A" : "快照 A";
+        document.getElementById("thB").textContent = snapB ? snapB.name || "快照B" : "快照 B";
+
+        if (!snapA && !snapB) {
+          table.hidden = true;
+          if (compareWrap) compareWrap.hidden = true;
+          return;
+        }
+        table.hidden = false;
+        if (compareWrap) compareWrap.hidden = false;
+
+        function scoreFromSnap(s) {
+          if (!s) return null;
+          const t = takeoffFromSnap(s);
+          return computeTurn(s.wp, s.we, s.b, t).S;
+        }
+
+        const rows = [
+          { k: "W_payload (g)", cur: cur.wp, a: snapA && snapA.wp, b: snapB && snapB.wp },
+          { k: "W_empty (g)", cur: cur.we, a: snapA && snapA.we, b: snapB && snapB.we },
+          { k: "b (mm)", cur: cur.b, a: snapA && snapA.b, b: snapB && snapB.b },
+          { k: "起飞 (m)", cur: cur.takeoff, a: snapA ? takeoffFromSnap(snapA) : null, b: snapB ? takeoffFromSnap(snapB) : null },
+          {
+            k: "S_turn",
+            cur: total,
+            a: snapA ? scoreFromSnap(snapA) : null,
+            b: snapB ? scoreFromSnap(snapB) : null,
+            num: true,
+          },
+        ];
+
+        body.innerHTML = "";
+        rows.forEach((r) => {
+          const tr = document.createElement("tr");
+          const td0 = document.createElement("td");
+          td0.textContent = r.k;
+          tr.appendChild(td0);
+          [r.cur, r.a, r.b].forEach((v) => {
+            const td = document.createElement("td");
+            if (v == null || v === "") td.textContent = "—";
+            else if (r.num) td.textContent = Number(v).toFixed(2);
+            else td.textContent = typeof v === "number" && !Number.isInteger(v) ? String(v) : String(v);
+            tr.appendChild(td);
+          });
+          body.appendChild(tr);
+        });
+
+        function appendTotalDeltaCell(td, snapTotal) {
+          if (snapTotal == null || !Number.isFinite(snapTotal)) {
+            td.textContent = "—";
+            return;
+          }
+          const d = snapTotal - total;
+          const span = document.createElement("span");
+          span.className = d >= 0 ? "delta-pos" : "delta-neg";
+          span.textContent = (d >= 0 ? "+" : "") + d.toFixed(2);
+          td.title = "该列单轮成绩 − 当前单轮";
+          td.appendChild(span);
+        }
+
+        if (snapA || snapB) {
+          const trD = document.createElement("tr");
+          trD.className = "diff-score-start";
+          const tdL = document.createElement("td");
+          tdL.textContent = "S_turn 与当前差（列 − 当前）";
+          trD.appendChild(tdL);
+          const tdC = document.createElement("td");
+          tdC.textContent = "—";
+          trD.appendChild(tdC);
+          const tdDa = document.createElement("td");
+          appendTotalDeltaCell(tdDa, snapA ? scoreFromSnap(snapA) : null);
+          trD.appendChild(tdDa);
+          const tdDb = document.createElement("td");
+          appendTotalDeltaCell(tdDb, snapB ? scoreFromSnap(snapB) : null);
+          trD.appendChild(tdDb);
+          body.appendChild(trD);
+
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 4;
+          td.className = "compare-table__hint";
+          td.textContent = "在列表中依次点「对比」可选中最多两个快照与当前表格对照。";
+          tr.appendChild(td);
+          body.appendChild(tr);
+        }
+      }
+
+      function clearSnapshotSaveError() {
+        const err = document.getElementById("snapshotSaveError");
+        const nameEl = document.getElementById("snapName");
+        if (err) {
+          err.hidden = true;
+          err.textContent = "";
+        }
+        if (nameEl) nameEl.classList.remove("snapshot-name-invalid");
+      }
+
+      function validateSnapshotBeforeSave() {
+        const nameEl = document.getElementById("snapName");
+        const err = document.getElementById("snapshotSaveError");
+        const name = nameEl.value.trim();
+        const x = readInputs();
+        const r = computeTurn(x.wp, x.we, x.b, x.takeoff);
+        nameEl.classList.remove("snapshot-name-invalid");
+        err.hidden = true;
+        err.textContent = "";
+        if (!name) {
+          err.textContent = "请填写版本名称后再保存快照。";
+          err.hidden = false;
+          nameEl.classList.add("snapshot-name-invalid");
+          nameEl.focus();
+          return false;
+        }
+        if (r.S === 0) {
+          err.textContent = "当前单轮成绩为 0，不能保存快照。请调整参数使得分大于 0 后再保存。";
+          err.hidden = false;
+          return false;
+        }
+        return true;
+      }
+
+      function pushSnapshot(name) {
+        const cur = snapshotFromInputs();
+        const r = computeTurn(cur.wp, cur.we, cur.b, cur.takeoff);
+        const total = r.S;
+        const list = loadSnapshots();
+        list.push({
+          name: name || "快照 " + (list.length + 1),
+          ...cur,
+          total,
+        });
+        saveSnapshots(list);
+        renderSnapshotList();
+        renderCompareTable();
+      }
+
+      document.getElementById("btnSnapshot").addEventListener("click", () => {
+        if (!validateSnapshotBeforeSave()) return;
+        const n = document.getElementById("snapName").value.trim();
+        pushSnapshot(n);
+        document.getElementById("snapName").value = "";
+        clearSnapshotSaveError();
+      });
+
+      document.getElementById("snapName").addEventListener("input", clearSnapshotSaveError);
+
+      document.getElementById("btnClearSnaps").addEventListener("click", () => {
+        if (confirm("确定清空所有快照？")) {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(DIFF_IDX_KEY);
+          comparePick = [];
+          renderSnapshotList();
+          renderCompareTable();
+        }
+      });
+
+      document.getElementById("diffSnapSelect").addEventListener("change", function () {
+        if (this.value) localStorage.setItem(DIFF_IDX_KEY, this.value);
+        else localStorage.removeItem(DIFF_IDX_KEY);
+        renderDiffTable();
+      });
+
+      const syncSlidersFromNumbers = (function () {
+        const pairs = [
+          { numId: "wp", rangeId: "wpSl", min: 0, max: 2000, decimals: null },
+          { numId: "we", rangeId: "weSl", min: 0, max: 2000, decimals: null },
+          { numId: "b", rangeId: "bSl", min: 0, max: 4000, decimals: null },
+          { numId: "takeoff", rangeId: "takeoffSl", min: 0, max: 3, decimals: 2 },
+        ];
+        function clamp(v, min, max) {
+          if (Number.isNaN(v)) return min;
+          return Math.min(max, Math.max(min, v));
+        }
+        function syncAll() {
+          pairs.forEach((p) => {
+            const n = document.getElementById(p.numId);
+            const r = document.getElementById(p.rangeId);
+            let v = parseFloat(n.value);
+            if (Number.isNaN(v)) return;
+            v = clamp(v, p.min, p.max);
+            r.value = p.decimals != null ? v.toFixed(p.decimals) : String(Math.round(v));
+          });
+        }
+        pairs.forEach((p) => {
+          document.getElementById(p.rangeId).addEventListener("input", function () {
+            const r = document.getElementById(p.rangeId);
+            const n = document.getElementById(p.numId);
+            const rv = Number(r.value);
+            if (p.decimals != null) n.value = rv.toFixed(p.decimals);
+            else n.value = String(Math.round(rv));
+            update();
+          });
+          document.getElementById(p.numId).addEventListener("input", function () {
+            const r = document.getElementById(p.rangeId);
+            const n = document.getElementById(p.numId);
+            let v = parseFloat(n.value);
+            if (Number.isNaN(v)) {
+              update();
+              return;
+            }
+            v = clamp(v, p.min, p.max);
+            if (p.decimals != null) n.value = v.toFixed(p.decimals);
+            else n.value = String(Math.round(v));
+            r.value = p.decimals != null ? v.toFixed(p.decimals) : String(Math.round(v));
+            update();
+          });
+        });
+        return syncAll;
+      })();
+
+      const REF_LIB_KEY = "model-aircraft-ref-scores-v1";
+
+      function getDefaultRefRows() {
+        return [
+          { rank: 1, school: "南昌航空大学科技学院", s1: 36.48, s2: 36.73, total: 73.2, award: "一等奖" },
+          { rank: 2, school: "河北科技大学", s1: 29.41, s2: 29.73, total: 59.14, award: "二等奖" },
+          { rank: 3, school: "桂林航天工业学院", s1: 30.79, s2: 26.74, total: 57.52, award: "二等奖" },
+          { rank: 4, school: "合肥工业大学", s1: 23.74, s2: 25.05, total: 48.79, award: "三等奖" },
+          { rank: 5, school: "沈阳航空航天大学", s1: 25.73, s2: 21.82, total: 47.55, award: "三等奖" },
+          { rank: 6, school: "武昌职业学院", s1: 20.84, s2: 23.48, total: 44.33, award: "三等奖" },
+          { rank: 7, school: "南昌航空大学", s1: 28.17, s2: 13.78, total: 41.95, award: "" },
+          { rank: 8, school: "太原理工大学", s1: 19.67, s2: 20.58, total: 40.25, award: "" },
+          { rank: 9, school: "空军预警学院", s1: 20.6, s2: 19.54, total: 40.14, award: "" },
+          { rank: 10, school: "中山大学", s1: 19.3, s2: 19.36, total: 38.67, award: "" },
+          { rank: 11, school: "南昌理工学院", s1: 29.8, s2: 8.11, total: 37.91, award: "" },
+          { rank: 12, school: "北京航空航天大学（杭州北航国际创新研究院）", s1: 18.19, s2: 18.48, total: 36.67, award: "" },
+          { rank: 13, school: "河北工业大学", s1: 18.15, s2: 16.72, total: 34.87, award: "" },
+          { rank: 14, school: "西安航空学院", s1: 16.35, s2: 16.45, total: 32.8, award: "" },
+          { rank: 15, school: "海军航空大学", s1: 16.48, s2: 16.15, total: 32.63, award: "" },
+          { rank: 16, school: "浙江大学", s1: 16.07, s2: 16.02, total: 32.09, award: "" },
+          { rank: 17, school: "大连理工大学", s1: 21.94, s2: 9.65, total: 31.59, award: "" },
+          { rank: 18, school: "西安工程大学", s1: 15.92, s2: 13.8, total: 29.73, award: "" },
+          { rank: 19, school: "广西自然资源职业技术学院", s1: 11.78, s2: 17.09, total: 28.87, award: "" },
+          { rank: 20, school: "南京航空航天大学", s1: 0, s2: 26.03, total: 26.03, award: "" },
+          { rank: 21, school: "南方科技大学", s1: 13.91, s2: 11.3, total: 25.22, award: "" },
+          { rank: 22, school: "合肥工业大学（宣城校区）", s1: 0, s2: 24.67, total: 24.67, award: "" },
+          { rank: 23, school: "上海工程技术大学", s1: 7.92, s2: 15.89, total: 23.81, award: "" },
+          { rank: 24, school: "湖南工商大学", s1: 15.46, s2: 7.74, total: 23.21, award: "" },
+          { rank: 25, school: "重庆理工大学", s1: 20.73, s2: 0, total: 20.73, award: "" },
+          { rank: 26, school: "西安交通大学", s1: 20.33, s2: 0, total: 20.33, award: "" },
+          { rank: 27, school: "太原科技大学", s1: 0, s2: 19.87, total: 19.87, award: "" },
+          { rank: 28, school: "山东航空学院", s1: 0, s2: 18.44, total: 18.44, award: "" },
+          { rank: 29, school: "厦门大学", s1: 0, s2: 17.65, total: 17.65, award: "" },
+          { rank: 30, school: "中北大学", s1: 5.37, s2: 5.46, total: 10.83, award: "" },
+          { rank: 31, school: "西南交通大学", s1: 9.36, s2: 0, total: 9.36, award: "" },
+          { rank: 32, school: "西安明德理工学院", s1: 5.31, s2: 0, total: 5.31, award: "" },
+        ];
+      }
+
+      function loadRefRows() {
+        try {
+          const raw = localStorage.getItem(REF_LIB_KEY);
+          if (!raw) return null;
+          const o = JSON.parse(raw);
+          if (!o || !Array.isArray(o.rows)) return null;
+          return o.rows;
+        } catch {
+          return null;
+        }
+      }
+
+      function saveRefRows(rows) {
+        localStorage.setItem(REF_LIB_KEY, JSON.stringify({ v: 1, rows: rows }));
+      }
+
+      function getRefRows() {
+        const r = loadRefRows();
+        if (!r || r.length === 0) {
+          const d = getDefaultRefRows();
+          saveRefRows(d);
+          return d;
+        }
+        return r;
+      }
+
+      function resetRefToDefault() {
+        const d = getDefaultRefRows();
+        saveRefRows(d);
+        return d;
+      }
+
+      function getCurrentTrialScore() {
+        const el = document.getElementById("outS");
+        if (!el) return null;
+        const t = el.textContent.trim();
+        if (t === "—" || t === "") return null;
+        const n = parseFloat(t);
+        return Number.isFinite(n) ? n : null;
+      }
+
+      function refreshRefModalCurrent() {
+        const curEl = document.getElementById("refModalCurrentS");
+        if (!curEl) return;
+        const s = getCurrentTrialScore();
+        curEl.textContent = s != null ? s.toFixed(2) : "—";
+      }
+
+      function renderRefTable() {
+        const tbody = document.getElementById("refTableBody");
+        const searchEl = document.getElementById("refSearch");
+        if (!tbody) return;
+        const q = (searchEl && searchEl.value) || "";
+        const qq = q.trim().toLowerCase();
+        let rows = getRefRows().slice();
+        if (qq) {
+          rows = rows.filter(function (r) {
+            return String(r.school || "")
+              .toLowerCase()
+              .indexOf(qq) >= 0;
+          });
+        }
+        rows.sort(function (a, b) {
+          const ra = a.rank != null ? a.rank : 999;
+          const rb = b.rank != null ? b.rank : 999;
+          if (ra !== rb) return ra - rb;
+          return String(a.school || "").localeCompare(String(b.school || ""), "zh-CN");
+        });
+        const cur = getCurrentTrialScore();
+        tbody.innerHTML = "";
+        rows.forEach(function (r) {
+          const tr = document.createElement("tr");
+          const s1 = Number(r.s1);
+          const s2 = Number(r.s2);
+          const high = Math.max(Number.isFinite(s1) ? s1 : 0, Number.isFinite(s2) ? s2 : 0);
+          const tdRank = document.createElement("td");
+          tdRank.className = "ref-num";
+          tdRank.textContent = r.rank != null ? String(r.rank) : "—";
+          tr.appendChild(tdRank);
+          const tdSchool = document.createElement("td");
+          tdSchool.textContent = r.school || "";
+          tr.appendChild(tdSchool);
+          ["s1", "s2", "total"].forEach(function (key) {
+            const td = document.createElement("td");
+            td.className = "ref-num";
+            const v = Number(r[key]);
+            td.textContent = Number.isFinite(v) ? v.toFixed(2) : "—";
+            tr.appendChild(td);
+          });
+          const tdAward = document.createElement("td");
+          tdAward.textContent = r.award || "";
+          tr.appendChild(tdAward);
+          const tdDelta = document.createElement("td");
+          tdDelta.className = "ref-num";
+          if (cur != null && Number.isFinite(high)) {
+            const d = Math.round((cur - high) * 100) / 100;
+            const span = document.createElement("span");
+            span.className = d >= 0 ? "ref-delta-pos" : "ref-delta-neg";
+            span.textContent = (d >= 0 ? "+" : "") + d.toFixed(2);
+            tdDelta.appendChild(span);
+          } else {
+            tdDelta.textContent = "—";
+          }
+          tr.appendChild(tdDelta);
+          tbody.appendChild(tr);
+        });
+      }
+
+      function openRefModal() {
+        const modal = document.getElementById("refScoreModal");
+        if (!modal) return;
+        modal.hidden = false;
+        document.body.style.overflow = "hidden";
+        const searchEl = document.getElementById("refSearch");
+        if (searchEl) searchEl.value = "";
+        refreshRefModalCurrent();
+        renderRefTable();
+      }
+
+      function closeRefModal() {
+        const modal = document.getElementById("refScoreModal");
+        if (!modal) return;
+        modal.hidden = true;
+        document.body.style.overflow = "";
+      }
+
+      document.getElementById("btnOpenRefLib").addEventListener("click", openRefModal);
+      document.getElementById("refModalCloseBtn").addEventListener("click", closeRefModal);
+      document.getElementById("refModalCloseX").addEventListener("click", closeRefModal);
+      document.getElementById("refModalBackdrop").addEventListener("click", closeRefModal);
+      document.getElementById("refSearch").addEventListener("input", function () {
+        renderRefTable();
+      });
+      document.getElementById("btnRefAdd").addEventListener("click", function () {
+        const school = document.getElementById("refAddSchool").value.trim();
+        const s1 = parseFloat(document.getElementById("refAddS1").value);
+        const s2 = parseFloat(document.getElementById("refAddS2").value);
+        const rankRaw = document.getElementById("refAddRank").value.trim();
+        if (!school) {
+          alert("请填写学校名称");
+          return;
+        }
+        if (!Number.isFinite(s1) || !Number.isFinite(s2)) {
+          alert("请填写机组1、机组2 单轮成绩（数字）");
+          return;
+        }
+        const total = Math.round((s1 + s2) * 100) / 100;
+        let rank = null;
+        if (rankRaw !== "") {
+          const ri = parseInt(rankRaw, 10);
+          if (Number.isFinite(ri) && ri > 0) rank = ri;
+        }
+        const rows = getRefRows();
+        rows.push({
+          rank: rank,
+          school: school,
+          s1: Math.round(s1 * 100) / 100,
+          s2: Math.round(s2 * 100) / 100,
+          total: total,
+          award: "",
+          custom: true,
+        });
+        saveRefRows(rows);
+        document.getElementById("refAddSchool").value = "";
+        document.getElementById("refAddS1").value = "";
+        document.getElementById("refAddS2").value = "";
+        document.getElementById("refAddRank").value = "";
+        renderRefTable();
+        update();
+      });
+      document.getElementById("btnRefReset").addEventListener("click", function () {
+        if (!confirm("将清空本机自定义记录并恢复为内置 2025 总决赛数据，确定？")) return;
+        resetRefToDefault();
+        renderRefTable();
+        update();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape") return;
+        const modal = document.getElementById("refScoreModal");
+        if (modal && !modal.hidden) closeRefModal();
+      });
+
+      const THEME_KEY = "model-aircraft-theme-pref-v1";
+
+      function getStoredThemePref() {
+        try {
+          return localStorage.getItem(THEME_KEY) || "system";
+        } catch {
+          return "system";
+        }
+      }
+
+      function resolveThemeIsDark(pref) {
+        if (pref === "dark") return true;
+        if (pref === "light") return false;
+        return window.matchMedia("(prefers-color-scheme: dark)").matches;
+      }
+
+      function applyTheme() {
+        const pref = getStoredThemePref();
+        const dark = resolveThemeIsDark(pref);
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme-pref", pref);
+        const meta = document.getElementById("metaThemeColor");
+        if (meta) meta.setAttribute("content", dark ? "#12151a" : "#f0f0f3");
+        const toggle = document.getElementById("themeToggle");
+        if (toggle) {
+          toggle.setAttribute("data-pref", pref);
+          toggle.querySelectorAll(".theme-toggle__btn").forEach(function (btn) {
+            const v = btn.getAttribute("data-pref");
+            btn.setAttribute("aria-pressed", v === pref ? "true" : "false");
+          });
+        }
+        update();
+      }
+
+      function setThemePref(pref) {
+        try {
+          localStorage.setItem(THEME_KEY, pref);
+        } catch (_) {}
+        applyTheme();
+      }
+
+      document.getElementById("themeToggle").addEventListener("click", function (e) {
+        const btn = e.target.closest(".theme-toggle__btn");
+        if (!btn) return;
+        const p = btn.getAttribute("data-pref");
+        if (p) setThemePref(p);
+      });
+
+      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
+        if (getStoredThemePref() === "system") applyTheme();
+      });
+
+      let resizeT;
+      window.addEventListener("resize", function () {
+        clearTimeout(resizeT);
+        resizeT = setTimeout(update, 120);
+      });
+
+      renderSnapshotList();
+      syncSlidersFromNumbers();
+      applyTheme();
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+  <script>
+    (function () {
+      if (typeof renderMathInElement !== "function") return;
+      var opts = {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\[", right: "\\]", display: true },
+          { left: "\\(", right: "\\)", display: false },
+        ],
+        throwOnError: false,
+      };
+      document.querySelectorAll(".header-formula").forEach(function (el) {
+        renderMathInElement(el, opts);
+      });
+    })();
+  </script>
+</body>
+</html>
